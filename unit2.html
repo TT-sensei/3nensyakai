@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>② わたしたちの市 - たんけんクエスト</title>
+    <style>
+        body {
+            font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif;
+            background-color: #e1f5fe; /* さわやかな水色 */
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { color: #0277bd; }
+        .game-container {
+            background-color: white;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 4px solid #03a9f4; /* 青系のフチ */
+        }
+        /* 探検ゲージ */
+        .progress-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 30px;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #29b6f6;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .player-icon {
+            position: absolute;
+            top: -10px;
+            left: 0%;
+            font-size: 30px;
+            transition: left 0.5s ease;
+            transform: translateX(-50%);
+        }
+        .goal-icon {
+            position: absolute;
+            top: 0;
+            right: 5px;
+            font-size: 20px;
+        }
+        /* 問題と選択肢 */
+        .question-text {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 2.5em;
+            line-height: 1.4;
+        }
+        /* 今回は画像を使わないので非表示スペース */
+        .question-image { display: none; }
+        
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .choice-btn {
+            background-color: #f1f8e9; /* 少し白っぽい青緑 */
+            border: 2px solid #4fc3f7;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .choice-btn:hover {
+            background-color: #b3e5fc;
+            transform: translateY(-2px);
+        }
+        .choice-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        /* 結果表示 */
+        #result-area { display: none; }
+        .result-title { font-size: 2em; color: #ff9800; margin-bottom: 10px; }
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #ff9800;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        .general-note {
+            font-size: 0.8em;
+            color: #e91e63;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🏙️ わたしたちの市 クエスト！</h1>
+    <p>高萩市や、市の土地の使われ方についてしらべよう！</p>
+
+    <div class="game-container" id="game-area">
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="player-icon" id="player-icon">🚌</div> <div class="goal-icon">🏢</div>
+        </div>
+
+        <div id="stage-info" style="color: #666; font-weight: bold; margin-bottom: 10px;"></div>
+        <div class="question-text" id="question-text">ロード中...</div>
+        
+        <div class="choices" id="choices-area">
+            </div>
+    </div>
+
+    <div class="game-container" id="result-area">
+        <div class="result-title">ちょうさ しゅうりょう！</div>
+        <p style="font-size: 1.5em;">せいかい：<span id="score"></span> / 10問</p>
+        <div id="rank-text" style="font-size: 1.3em; font-weight: bold; margin: 20px 0;"></div>
+        <button class="choice-btn" onclick="initGame()">もういちど ちょうさする</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 ポータルにもどる</a>
+    </div>
+
+    <script>
+        // --- 効果音 ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function playTone(freq, type, duration, vol=0.1) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = type;
+            oscillator.frequency.value = freq;
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSound(type) {
+            if (type === 'correct') {
+                playTone(523.25, 'sine', 0.1);
+                setTimeout(() => playTone(659.25, 'sine', 0.2), 100);
+            } else if (type === 'incorrect') {
+                playTone(250, 'sawtooth', 0.2, 0.2);
+                setTimeout(() => playTone(200, 'sawtooth', 0.3, 0.2), 150);
+            } else if (type === 'clear') {
+                playTone(523.25, 'square', 0.15);
+                setTimeout(() => playTone(523.25, 'square', 0.15), 150);
+                setTimeout(() => playTone(523.25, 'square', 0.15), 300);
+                setTimeout(() => playTone(783.99, 'square', 0.4), 450);
+            }
+        }
+
+        // --- 問題データ ---
+        const allQuestions = {
+            // ステージ1：位置と八方位
+            stage1: [
+                { q: "高萩市（たかはぎし）は、茨城県のどのあたりにありますか？", c: ["北（きた）のほう", "南（みなみ）のほう", "西（にし）のほう", "まん中"], a: "北（きた）のほう" },
+                { q: "高萩市の【東がわ】にあるのは、つぎのうちどれですか？", c: ["海（太平洋）", "高い山", "大きな湖", "東京都"], a: "海（太平洋）" },
+                { q: "高萩市の【南がわ】にある、となりの市はどこですか？", c: ["日立市（ひたちし）", "水戸市（みとし）", "つくば市", "北茨城市（きたいばらきし）"], a: "日立市（ひたちし）" },
+                { q: "高萩市の【北がわ】にある、となりの市はどこですか？", c: ["北茨城市（きたいばらきし）", "日立市（ひたちし）", "ひたちなか市", "高松市（たかまつし）"], a: "北茨城市（きたいばらきし）" },
+                { q: "東・西・南・北の４つに、ななめの方位をくわえたものを何という？", c: ["八方位（はちほうい）", "六方位（ろくほうい）", "十方位（じゅうほうい）", "全方位（ぜんほうい）"], a: "八方位（はちほうい）" },
+                { q: "北と東のあいだの、ななめの方位はどれですか？", c: ["北東（ほくとう）", "南東（なんとう）", "北西（ほくせい）", "南西（なんせい）"], a: "北東（ほくとう）" },
+                { q: "南と西のあいだの、ななめの方位はどれですか？", c: ["南西（なんせい）", "北西（ほくせい）", "南東（なんとう）", "北東（ほくとう）"], a: "南西（なんせい）" },
+                { q: "自分の住んでいる市がどこにあるか調べるのに、便利なものは？", c: ["地図", "国語のじしょ", "温度計", "方位じしん"], a: "地図" },
+                { q: "高萩市の西がわは、どんな土地が多いですか？", c: ["山や森林", "海", "大きなビル", "遊園地"], a: "山や森林" },
+                { q: "高萩市から見て、海があるのはどの方位ですか？", c: ["東", "西", "南", "北"], a: "東" }
+            ],
+            // ステージ2：高萩の交通・土地と、一般的な市の様子
+            stage2: [
+                { q: "高萩市で、工場がたくさんあるのはどのあたりですか？", c: ["高速道路の近く", "海のすぐそば", "山のてっぺん", "市役所の中"], a: "高速道路の近く" },
+                { q: "高萩市を南北（たて）に走っている、大きな道路はどれですか？", c: ["国道６号（ろくごう）", "国道１号", "国道５０号", "国道４号"], a: "国道６号（ろくごう）" },
+                { q: "高萩市を通っている高速道路のなまえは？", c: ["常磐自動車道（じょうばん）", "東名高速道路（とうめい）", "東北自動車道（とうほく）", "名神高速道路（めいしん）"], a: "常磐自動車道（じょうばん）" },
+                { q: "【ある市のお話】駅のまわりなど、家やお店が多くて人があつまるのはどんな所？", c: ["にぎやかな所", "緑の多い所", "工場の多い所", "田や畑の多い所"], a: "にぎやかな所" },
+                { q: "【ある市のお話】山が多くて高い土地で、林が広がっているのはどんな所？", c: ["緑の多い所", "にぎやかな所", "工場の多い所", "田や畑の多い所"], a: "緑の多い所" },
+                { q: "【ある市のお話】平らな土地で、田んぼや畑が広がっているのはどんな所？", c: ["田や畑の多い所", "にぎやかな所", "工場の多い所", "緑の多い所"], a: "田や畑の多い所" },
+                { q: "【ある市のお話】田や畑の多い所にたくさんあるのは、つぎのうちどれ？", c: ["ため池や用水路", "大きなビル", "デパート", "大きな船"], a: "ため池や用水路" },
+                { q: "【ある市のお話】工場がたくさんある所では、どんな人が多いですか？", c: ["工場ではたらく人", "お祭りをする人", "魚をとる人", "木を切る人"], a: "工場ではたらく人" },
+                { q: "土地の使われ方は、場所によって同じですか、ちがいますか？", c: ["場所によってちがう", "どこも全部おなじ", "毎日かわる", "だれも知らない"], a: "場所によってちがう" },
+                { q: "高萩市を通っている鉄道（電車）は、つぎのうちどれですか？", c: ["JR常磐線（じょうばんせん）", "つくばエクスプレス", "新幹線", "JR山手線（やまのてせん）"], a: "JR常磐線（じょうばんせん）" }
+            ],
+            // ステージ3：みんなの施設・古い建物
+            stage3: [
+                { q: "市役所や図書館など、みんなが利用できるしせつを何という？", c: ["公共（こうきょう）しせつ", "秘密（ひみつ）のしせつ", "おもしろいしせつ", "お店"], a: "公共（こうきょう）しせつ" },
+                { q: "つぎの中で「公共しせつ」はどれですか？", c: ["公民館（こうみんかん）", "スーパーマーケット", "コンビニ", "ケーキ屋さん"], a: "公民館（こうみんかん）" },
+                { q: "古いお寺や神社、石碑（せきひ）などを見ると、どんなことがわかりますか？", c: ["市の昔のようす", "あしたの天気", "スーパーのねだん", "遠くの国のこと"], a: "市の昔のようす" },
+                { q: "【ある市のお話】お寺や神社は、市のどんな場所に集まっていることが多い？", c: ["古い地いき", "駅のすぐそば", "海の中", "新しいマンションの横"], a: "古い地いき" },
+                { q: "【ある市のお話】公共しせつは、市のどんな場所に多いですか？", c: ["人が多く住んでいる所", "人がだれもいない所", "山のおく", "田んぼのまん中"], a: "人が多く住んでいる所" },
+                { q: "国道や高速道路は、主に何が通るための道ですか？", c: ["自動車やトラック", "船", "飛行機", "歩く人だけ"], a: "自動車やトラック" },
+                { q: "鉄道（電車）の駅のまわりは、ふつうどうなっていますか？", c: ["お店が多くてにぎやか", "木がたくさん生えている", "田んぼしかない", "工場しかない"], a: "お店が多くてにぎやか" },
+                { q: "トラックなどで荷物を遠くに運ぶとき、便利なのはどこを通ることですか？", c: ["高速道路", "せまい裏道（うらみち）", "歩道", "公園の中"], a: "高速道路" },
+                { q: "【ある市のお話】石碑（せきひ）には、何が書いてあることがありますか？", c: ["昔おこった大きなさいがい", "あしたの給食", "テレビの番組", "電車のじこく"], a: "昔おこった大きなさいがい" },
+                { q: "まちの様子を調べるとき、高いところから見るとどうなりますか？", c: ["遠くまでよく見える", "何も見えなくなる", "道にまよう", "声がよく聞こえる"], a: "遠くまでよく見える" }
+            ]
+        };
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function initGame() {
+            const s1 = shuffleArray(allQuestions.stage1).slice(0, 3);
+            const s2 = shuffleArray(allQuestions.stage2).slice(0, 3);
+            const s3 = shuffleArray(allQuestions.stage3).slice(0, 3);
+            
+            const remainings = [...allQuestions.stage1, ...allQuestions.stage2, ...allQuestions.stage3]
+                .filter(q => !s1.includes(q) && !s2.includes(q) && !s3.includes(q));
+            const boss = shuffleArray(remainings).slice(0, 1);
+
+            currentQuestions = [...s1, ...s2, ...s3, ...boss];
+            currentQuestionIndex = 0;
+            score = 0;
+
+            document.getElementById('result-area').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            
+            updateProgress();
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const qData = currentQuestions[currentQuestionIndex];
+            const choicesArea = document.getElementById('choices-area');
+            const stageInfo = document.getElementById('stage-info');
+            const questionText = document.getElementById('question-text');
+            
+            if(currentQuestionIndex < 3) stageInfo.textContent = "🗺️ ステージ1：高萩市の位置とまわり";
+            else if(currentQuestionIndex < 6) stageInfo.textContent = "🛣️ ステージ2：八方位と土地のようす";
+            else if(currentQuestionIndex < 9) stageInfo.textContent = "🏫 ステージ3：交通とみんなのしせつ";
+            else stageInfo.textContent = "👹 さいごの試練：市のひみつボス！";
+
+            // 「【ある市のお話】」が含まれている場合、見た目を分けて強調する
+            if (qData.q.includes("【ある市のお話】")) {
+                const cleanText = qData.q.replace("【ある市のお話】", "");
+                questionText.innerHTML = `<span class="general-note">※高萩市ではなく、一般的な「ある市」のお話です</span>第 ${currentQuestionIndex + 1} 問： ${cleanText}`;
+            } else {
+                questionText.textContent = `第 ${currentQuestionIndex + 1} 問： ${qData.q}`;
+            }
+            
+            choicesArea.innerHTML = '';
+            const shuffledChoices = shuffleArray(qData.c);
+
+            shuffledChoices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = choice;
+                btn.onclick = () => checkAnswer(choice, qData.a, btn);
+                choicesArea.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct, btn) {
+            const buttons = document.querySelectorAll('.choice-btn');
+            buttons.forEach(b => b.disabled = true);
+
+            if (selected === correct) {
+                playSound('correct');
+                btn.style.backgroundColor = '#81c784';
+                btn.textContent = "⭕ せいかい！ " + btn.textContent;
+                score++;
+            } else {
+                playSound('incorrect');
+                btn.style.backgroundColor = '#e57373';
+                btn.textContent = "❌ ざんねん！ " + btn.textContent;
+                buttons.forEach(b => {
+                    if(b.textContent === correct) {
+                        b.style.backgroundColor = '#81c784';
+                        b.textContent = "⭕ これが正解 " + b.textContent;
+                    }
+                });
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                updateProgress();
+                if (currentQuestionIndex < currentQuestions.length) {
+                    showQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1800); // 読む時間を考慮して少しだけ待機時間を長くしました
+        }
+
+        function updateProgress() {
+            const percentage = (currentQuestionIndex / 10) * 100;
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('player-icon').style.left = percentage + '%';
+        }
+
+        function showResult() {
+            playSound('clear');
+
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('result-area').style.display = 'block';
+            document.getElementById('score').textContent = score;
+
+            let rank = "";
+            if (score === 10) rank = "👑 すばらしい！きみは「高萩はかせ」だ！";
+            else if (score >= 8) rank = "🎖️ すごい！「ベテランちょうさ隊長」だ！";
+            else if (score >= 5) rank = "🚌 よくがんばった！「一人前ちょうさ隊員」だ！";
+            else rank = "🐣 まだまだこれから！「みならい隊員」だ！";
+
+            document.getElementById('rank-text').textContent = rank;
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
