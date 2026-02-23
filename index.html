@@ -3,115 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3ねんせい しゃかいか クエスト</title>
+    <title>社会科たんけんポータル</title>
     <style>
-        body {
-            font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif;
-            background-color: #e0f7fa;
-            color: #333;
-            text-align: center;
-            margin: 0;
+        body { 
+            font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif; 
+            background-color: #e0f7fa; 
+            color: #333; 
+            text-align: center; 
+            margin: 0; 
+            padding: 20px; 
+            background-image: radial-gradient(#b2ebf2 20%, transparent 20%), radial-gradient(#b2ebf2 20%, transparent 20%);
+            background-position: 0 0, 25px 25px;
+            background-size: 50px 50px;
+        }
+        .header-container {
+            background-color: #00838f;
+            color: white;
             padding: 20px;
-        }
-        h1 {
-            color: #00796b;
-            font-size: 2.5em;
-            text-shadow: 2px 2px white;
-            margin-bottom: 10px;
-        }
-        p.subtitle {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #555;
+            border-radius: 15px;
             margin-bottom: 30px;
+            box-shadow: 0 6px 0 #005662;
+            border: 4px solid #fff;
         }
-        .portal-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+        h1 { margin: 0; font-size: 2.2em; letter-spacing: 2px;}
+        p.subtitle { margin: 10px 0 0 0; font-size: 1.2em; font-weight: bold; color: #e0f2f1; }
+        
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
         }
-        .quest-card {
+
+        .mission-card {
             background-color: white;
-            border-radius: 20px;
-            width: 300px;
+            border-radius: 15px;
             padding: 20px;
-            text-decoration: none;
-            color: #333;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-            border: 4px solid #b2dfdb;
-            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-bottom: 6px solid #ccc;
+            transition: all 0.2s;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            justify-content: space-between;
         }
-        .quest-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            border-color: #009688;
+
+        .mission-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
         }
-        .card-icon {
-            font-size: 4em;
-            margin-bottom: 10px;
-        }
-        .card-title {
-            font-size: 1.4em;
+
+        .icon { font-size: 3em; margin-bottom: 10px; }
+        .mission-title { font-size: 1.3em; font-weight: bold; margin-bottom: 10px; }
+        .mission-desc { font-size: 0.95em; color: #666; margin-bottom: 20px; line-height: 1.4; flex-grow: 1;}
+
+        .start-btn {
+            display: inline-block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
             font-weight: bold;
-            color: #00796b;
-            margin-bottom: 10px;
-            width: 100%;
-            border-bottom: 2px dashed #b2dfdb;
-            padding-bottom: 10px;
+            font-size: 1.1em;
+            transition: background-color 0.2s;
         }
-        .card-desc {
-            font-size: 1em;
-            color: #666;
-            line-height: 1.4;
-        }
-        /* 準備中のカード用 */
-        .coming-soon {
-            filter: grayscale(80%);
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-        .coming-soon:hover {
-            transform: none;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-            border-color: #b2dfdb;
+
+        /* 各クエストのテーマカラー */
+        .card-1 { border-color: #4caf50; }
+        .card-1 .mission-title { color: #2e7d32; }
+        .card-1 .start-btn { background-color: #4caf50; box-shadow: 0 4px 0 #2e7d32; }
+        .card-1 .start-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .card-2 { border-color: #2196f3; }
+        .card-2 .mission-title { color: #1565c0; }
+        .card-2 .start-btn { background-color: #2196f3; box-shadow: 0 4px 0 #1565c0; }
+        .card-2 .start-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .card-3 { border-color: #ff9800; }
+        .card-3 .mission-title { color: #ef6c00; }
+        .card-3 .start-btn { background-color: #ff9800; box-shadow: 0 4px 0 #ef6c00; }
+        .card-3 .start-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .card-4 { border-color: #e91e63; }
+        .card-4 .mission-title { color: #c2185b; }
+        .card-4 .start-btn { background-color: #e91e63; box-shadow: 0 4px 0 #c2185b; }
+        .card-4 .start-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .card-5 { border-color: #f44336; }
+        .card-5 .mission-title { color: #c62828; }
+        .card-5 .start-btn { background-color: #f44336; box-shadow: 0 4px 0 #c62828; }
+        .card-5 .start-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .card-6 { border-color: #3f51b5; }
+        .card-6 .mission-title { color: #283593; }
+        .card-6 .start-btn { background-color: #3f51b5; box-shadow: 0 4px 0 #283593; }
+        .card-6 .start-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .card-7 { border-color: #9c27b0; }
+        .card-7 .mission-title { color: #6a1b9a; }
+        .card-7 .start-btn { background-color: #9c27b0; box-shadow: 0 4px 0 #6a1b9a; }
+        .card-7 .start-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .footer {
+            margin-top: 40px;
+            color: #00838f;
+            font-weight: bold;
+            font-size: 1.1em;
         }
     </style>
 </head>
 <body>
 
-    <h1>🌟 3ねんせい しゃかいか クエスト 🌟</h1>
-    <p class="subtitle">どのクエストに ちょうせん する？</p>
+    <div class="header-container">
+        <h1>🌍 社会科たんけんポータル 🧭</h1>
+        <p class="subtitle">きみは どのミッションに ちょうせんする？</p>
+    </div>
 
-    <div class="portal-container">
-        <a href="unit1.html" class="quest-card">
-            <div class="card-icon">🗺️</div>
-            <div class="card-title">① わたしたちの まち</div>
-            <div class="card-desc">方位や地図記号をおぼえて、まちのひみつをはっけんしよう！</div>
-        </a>
+    <div class="mission-grid">
+        <div class="mission-card card-1">
+            <div class="icon">🗺️</div>
+            <div class="mission-title">① まわりの様子</div>
+            <div class="mission-desc">方位（ほうい）や地図記号のなぞを解き明かそう！まちの探検に出発だ！</div>
+            <a href="unit1.html" class="start-btn">ミッション開始 ➡️</a>
+        </div>
 
-        <a href="unit2.html" class="quest-card">
-            <div class="card-icon">🏙️</div>
-            <div class="card-title">② わたしたちの 市</div>
-            <div class="card-desc">市の様子や、土地がどんなふうに使われているかしらべよう！</div>
-        </a>
+        <div class="mission-card card-2">
+            <div class="icon">🏙️</div>
+            <div class="mission-title">② 市の様子</div>
+            <div class="mission-desc">土地の高さや交通の広がりを調査せよ！ヘリコプターで空から確認だ！</div>
+            <a href="unit2.html" class="start-btn">ミッション開始 ➡️</a>
+        </div>
 
-        <a href="unit3.html" class="quest-card">
-            <div class="card-icon">🛒</div>
-            <div class="card-title">③ スーパーの くふう</div>
-            <div class="card-desc">お店の人がしている、たくさんのお客さんに来てもらう工夫とは？</div>
-        </a>
+        <div class="mission-card card-3">
+            <div class="icon">🛒</div>
+            <div class="mission-title">③ お店ではたらく人</div>
+            <div class="mission-desc">スーパーマーケットの裏側をのぞいてみよう！品物がとどくまでのヒミツとは？<br>（※準備中）</div>
+            <a href="#" class="start-btn" style="background-color:#ccc; box-shadow:0 4px 0 #999; cursor:not-allowed;">準備中 🛠️</a>
+        </div>
 
-        <a href="#" class="quest-card coming-soon">
-            <div class="card-icon">🏭</div>
-            <div class="card-title">④ 工場・農家の しごと</div>
-            <div class="card-desc">（じゅんびちゅう・・・もう少し待ってね！）</div>
-        </a>
+        <div class="mission-card card-4">
+            <div class="icon">🏭</div>
+            <div class="mission-title">④ 工場ではたらく人</div>
+            <div class="mission-desc">かまぼこ工場に潜入！機械と職人さんのスゴ技、安全の工夫を見つけ出せ！</div>
+            <a href="unit4.html" class="start-btn">ミッション開始 ➡️</a>
+        </div>
+
+        <div class="mission-card card-5">
+            <div class="icon">🚒</div>
+            <div class="mission-title">⑤ 火事からまちを守る</div>
+            <div class="mission-desc">めざせ一流消防士！119番のしくみや、すばやい出動のヒミツに迫るぞ！</div>
+            <a href="unit5.html" class="start-btn">ミッション開始 ➡️</a>
+        </div>
+
+        <div class="mission-card card-6">
+            <div class="icon">🚓</div>
+            <div class="mission-title">⑥ 事故からまちを守る</div>
+            <div class="mission-desc">めざせ一流警察官！パトロールや地域の協力で、みんなの安全を守り抜け！</div>
+            <a href="unit6.html" class="start-btn">ミッション開始 ➡️</a>
+        </div>
+
+        <div class="mission-card card-7">
+            <div class="icon">⏳</div>
+            <div class="mission-title">⑦ まちのうつりかわり</div>
+            <div class="mission-desc">タイムマシンで昔へ！道具の進化や、人の増え方を歴史から学び取れ！</div>
+            <a href="unit7.html" class="start-btn">ミッション開始 ➡️</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        📝 クエストをクリアしたら、ノートに「ふり返り」を書いてみよう！
     </div>
 
 </body>
