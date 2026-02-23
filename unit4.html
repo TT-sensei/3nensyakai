@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>④ 工場のしごと - たんけんクエスト</title>
+    <style>
+        body { font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif; background-color: #f0f4f8; color: #333; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #3f51b5; margin-bottom: 5px;}
+        .game-container { background-color: white; max-width: 600px; margin: 0 auto; border-radius: 15px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 4px solid #5c6bc0; }
+        
+        .status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; }
+        .combo-text { color: #f50057; font-size: 1.2em; animation: bounce 0.3s ease; }
+        @keyframes bounce { 0% {transform: scale(1);} 50% {transform: scale(1.2);} 100% {transform: scale(1);} }
+
+        .progress-container { width: 100%; background-color: #ddd; border-radius: 10px; margin-bottom: 20px; height: 30px; position: relative; }
+        .progress-bar { height: 100%; background-color: #7986cb; border-radius: 10px; width: 0%; transition: width 0.5s ease; }
+        .player-icon { position: absolute; top: -10px; left: 0%; font-size: 30px; transition: left 0.5s ease; transform: translateX(-50%); }
+        .goal-icon { position: absolute; top: 0; right: 5px; font-size: 20px; }
+        
+        /* 探偵風の問題文エリア */
+        .secret-mission { background-color: #3f51b5; color: white; border-radius: 5px; padding: 5px 10px; font-size: 0.9em; display: inline-block; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px;}
+        .question-text { font-size: 1.2em; margin-bottom: 20px; font-weight: bold; min-height: 2em; line-height: 1.4; border-left: 5px solid #3f51b5; padding-left: 10px; text-align: left; }
+
+        .choices { display: flex; flex-direction: column; gap: 10px; }
+        .choice-btn { background-color: #e8eaf6; border: 2px solid #9fa8da; border-radius: 10px; padding: 15px; font-size: 1.1em; cursor: pointer; transition: all 0.2s; font-weight: bold; color: #303f9f; }
+        .choice-btn:hover { background-color: #c5cae9; transform: translateY(-2px); }
+        .choice-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+
+        #explanation-area { display: none; margin-top: 20px; padding: 15px; background-color: #fff3e0; border: 2px dashed #ff9800; border-radius: 10px; text-align: left; font-size: 1.1em; color: #e65100; }
+        .next-btn { margin-top: 15px; padding: 15px 30px; background-color: #ff9800; color: white; border: none; border-radius: 30px; font-size: 1.2em; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 0 #e65100; }
+        .next-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        #result-area { display: none; }
+        .result-title { font-size: 2em; color: #3f51b5; margin-bottom: 10px; }
+        .reflection-box { background-color: #fff9c4; border: 2px solid #fbc02d; border-radius: 10px; padding: 15px; margin: 20px 0; text-align: left; }
+        .back-btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #3f51b5; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>🏭 工場のひみつ はっけん隊</h1>
+    <p style="margin-top:0;">はっけん隊員になって、安全でおいしい「工場のひみつ」をさぐろう！</p>
+
+    <div class="game-container" id="game-area">
+        <div class="status-bar">
+            <span id="stage-info" style="color: #666;"></span>
+            <span id="combo-display" class="combo-text"></span>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="player-icon" id="player-icon">🕵️</div>
+            <div class="goal-icon">🏭</div>
+        </div>
+
+        <div class="secret-mission" id="mission-label">ミッション</div>
+        <div class="question-text" id="question-text">ロード中...</div>
+        
+        <div class="choices" id="choices-area"></div>
+
+        <div id="explanation-area">
+            <div style="font-weight:bold; margin-bottom:5px;">💡 はっけんレポート（なぜかな？）</div>
+            <div id="explanation-text"></div>
+            <button class="next-btn" onclick="nextQuestion()">次のヒミツをさぐる ➡️</button>
+        </div>
+    </div>
+
+    <div class="game-container" id="result-area">
+        <div class="result-title">ちょうさ しゅうりょう！</div>
+        <p style="font-size: 1.5em;">見つけたヒミツ：<span id="score"></span> / 10</p>
+        <p style="font-size: 1.2em; color: #f50057; font-weight: bold;">最大連続正解：<span id="max-combo"></span> コンボ！</p>
+        <div id="rank-text" style="font-size: 1.3em; font-weight: bold; margin: 10px 0;"></div>
+        
+        <div class="reflection-box">
+            <h3 style="margin-top:0; color: #f57f17;">📝 ノートにふり返りを書こう！</h3>
+            <p>工場の人が、<b>「安全」</b>や<b>「おいしさ」</b>のためにどんな工夫をしていたかな？<br>きみが一番おどろいたヒミツを、理由と一緒にノートにまとめてみよう。</p>
+        </div>
+
+        <button class="choice-btn" style="width:100%; margin-bottom:10px;" onclick="initGame()">もういちど 別のヒミツを探す</button>
+        <a href="index.html" class="back-btn" style="width:90%;">🏠 ポータルにもどる</a>
+    </div>
+
+    <script>
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function playTone(freq, type, duration, vol=0.1) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = type;
+            oscillator.frequency.value = freq;
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+        function playSound(type) {
+            if (type === 'correct') { playTone(523.25, 'sine', 0.1); setTimeout(() => playTone(659.25, 'sine', 0.2), 100); }
+            else if (type === 'incorrect') { playTone(250, 'sawtooth', 0.2, 0.2); setTimeout(() => playTone(200, 'sawtooth', 0.3, 0.2), 150); }
+            else if (type === 'clear') { playTone(523.25, 'square', 0.15); setTimeout(() => playTone(523.25, 'square', 0.15), 150); setTimeout(() => playTone(523.25, 'square', 0.15), 300); setTimeout(() => playTone(783.99, 'square', 0.4), 450); }
+        }
+
+        // 大増量！全16問の問題プール
+        const allQuestions = {
+            stage1: [ // 衛生・安全のヒミツ
+                { q: "工場で食べ物を作る部屋に入る前、服についた見えないごみやほこりをどうやって取る？", c: ["風をふきつける（エアシャワー）", "服をぜんぶぬぐ", "手でパパンとまたはたく"], a: "風をふきつける（エアシャワー）", exp: "強い風が出る「エアシャワー」の部屋に入ったり、粘着（ねんちゃく）ローラーを使ったりして、ほこりを絶対に入れないようにしているんだ。" },
+                { q: "工場で働く人が着ている「白い服や帽子」のヒミツはどれ？", c: ["かみの毛が落ちないように、すき間なくおおっている", "暑いから、うすくて短い服を着ている", "おしゃれのために、かっこよくしている"], a: "かみの毛が落ちないように、すき間なくおおっている", exp: "食べ物に髪の毛やごみが混ざるのが一番キケン！だから、目だけを出してしっかりガードしているんだよ。" },
+                { q: "工場に入る前に、なぜ何度もていねいに「手洗い」や「消毒」をするのかな？", c: ["ばいきんが食べ物につかないようにするため", "手がよごれていると、すべって転ぶから", "手を水で冷やすため"], a: "ばいきんが食べ物につかないようにするため", exp: "手洗いは安全の基本！タイマーを使って、決められた時間しっかりと洗ってからでないと部屋に入れないんだ。" },
+                { q: "食べ物を作るきれいな部屋に入るとき、靴（くつ）はどうする？", c: ["工場せんようの、きれいな靴にはきかえる", "外から来た靴のまま入る", "靴をぬいで、はだしで入る"], a: "工場せんようの、きれいな靴にはきかえる", exp: "外のどろやバイキンを持ち込まないように、きれいに消毒された長靴などにはきかえてから入るんだよ。" },
+                { q: "できあがった商品（かまぼこなど）に、金属などのあぶないゴミが入っていないか、どうやって調べる？", c: ["金属を見つける専用の機械に通す", "たたいて音を聞く", "お客さんに食べてもらう"], a: "金属を見つける専用の機械に通す", exp: "金属探知機（きんぞくたんちき）やエックス線など、特別な機械の目を使って、中身までしっかり安全をかくにんしているよ。" }
+            ],
+            stage2: [ // 機械と手作業、おいしさのヒミツ
+                { q: "魚をすり身にするなど、同じ作業を「はやく・たくさん」するために使うものは？", c: ["大きな機械（きかい）", "とっても大きな包丁", "たくさんの子どもたち"], a: "大きな機械（きかい）", exp: "機械を使えば、一度にたくさんの食べ物をスピーディーに作ることができるんだ。スーパーにたくさん並ぶヒミツだね！" },
+                { q: "すごい機械がたくさんあるのに、さいごのチェックは「人の目」でします。なぜかな？", c: ["機械ではわからない、小さなキズやちがいを見つけるため", "機械の電源が切れてしまったから", "人がひまにならないようにするため"], a: "機械ではわからない、小さなキズやちがいを見つけるため", exp: "機械は「はやく・たくさん」が得意だけど、細かい形や色、やわらかさなどの「おいしさのチェック」は、やっぱりプロの人の目が一番なんだ。" },
+                { q: "食べ物（かまぼこなど）をおいしく安全に作るために、工場でいつも気を配っているものは？", c: ["部屋や機械の「温度（おんど）」", "部屋の「あかるさ」", "流している「音楽」"], a: "部屋や機械の「温度（おんど）」", exp: "温度が高いと食べ物がくさってしまったり、味が落ちたりするから、部屋をすずしく保つなど、温度チェックは欠かせないんだ。" },
+                { q: "機械だけじゃなく、手作りで商品を作る「職人（しょくにん）さん」がいるのはなぜ？", c: ["昔からの伝統（でんとう）の味や、とくべつな技術をまもるため", "機械を買うお金がないから", "機械の使い方がわからないから"], a: "昔からの伝統（でんとう）の味や、とくべつな技術をまもるため", exp: "機械がたくさんある今でも、機械では出せない特別な味や、長年受けつがれてきた技を守るために、職人さんが活躍しているよ。" },
+                { q: "できた商品を、ビニールのパックなどでしっかりと包む（ほうそうする）のはなぜ？", c: ["ごみが入らず、新鮮で長持ちするようにするため", "見た目をカラフルにするためだけ", "お店の人が持ちやすくするため"], a: "ごみが入らず、新鮮で長持ちするようにするため", exp: "空気にふれると食べ物は傷みやすくなるんだ。しっかりパッケージすることで、みんなの家まで安全に届けられるよ。" }
+            ],
+            stage3: [ // 原料と出荷のヒミツ
+                { q: "工場で作られた食べ物は、どうやって遠くのスーパーに運ばれる？", c: ["冷蔵庫がついたトラック（保冷車）", "タクシーの助手席", "自転車のかご"], a: "冷蔵庫がついたトラック（保冷車）", exp: "せっかくおいしく作っても、ぬるくなると傷んでしまうから、冷たいまま運べる「保冷車」が大活躍しているんだ。" },
+                { q: "できたての商品を、箱づめする前に工場の中ですぐに冷やすのはなぜ？", c: ["あたたかいままだと、くさったり味が落ちたりするから", "冷たい方がトラックに積みやすいから", "急いでいるから"], a: "あたたかいままだと、くさったり味が落ちたりするから", exp: "蒸したり焼いたりして熱くなった食べ物は、急いで冷やさないとバイキンが増えやすくなるんだ。これも安全のヒミツ！" },
+                { q: "かまぼこ工場が、「小田原（おだわら）」のように海の近くにあることが多い理由は？", c: ["原料になる新鮮な「魚」が、すぐに手に入るから", "工場の人たちが、お昼休みに泳ぐため", "海風にあたるとおいしくなるから"], a: "原料になる新鮮な「魚」が、すぐに手に入るから", exp: "材料（原料）がとれる場所の近くに工場を作れば、一番新鮮なうちにおいしい商品を作ることができるんだね！" },
+                { q: "工場では、どうして朝早くからたくさんの人が交代で働いているの？", c: ["日本中のたくさんのお客さんに、商品を間に合わせるため", "みんな早起きが好きだから", "夜は電気がつかえないから"], a: "日本中のたくさんのお客さんに、商品を間に合わせるため", exp: "スーパーの開店時間に合わせてお店に並べるには、夜中や朝早くから作ってトラックで運ぶ必要があるんだ。" }
+            ],
+            boss: { 
+                q: "工場のヒミツをたくさん見つけたね！工場が「大きな機械」と「人」の両方を使って商品を作っている、一番の理由はどれかな？", 
+                c: ["機械でたくさん作りながら、人の目で安全を守り、おいしい商品をみんなに届けるため", "機械がこわれた時に、人が代わりに走って運ぶため", "機械の使い方を、いつも人がじっと見ているため"], 
+                a: "機械でたくさん作りながら、人の目で安全を守り、おいしい商品をみんなに届けるため", 
+                exp: "ミッション・コンプリート！「はやく・たくさん」の機械と、「安全・おいしい」を守る人。この２つのパワーが合わさっているのが、工場の最大のヒミツなんだね！" 
+            }
+        };
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0, combo = 0, maxCombo = 0;
+
+        function shuffleArray(array) { const newArray = [...array]; for (let i = newArray.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [newArray[i], newArray[j]] = [newArray[j], newArray[i]]; } return newArray; }
+
+        function initGame() {
+            // プールからランダムに抽出して出題（リプレイ性が高い）
+            const s1 = shuffleArray(allQuestions.stage1).slice(0, 3);
+            const s2 = shuffleArray(allQuestions.stage2).slice(0, 4);
+            const s3 = shuffleArray(allQuestions.stage3).slice(0, 2);
+            
+            currentQuestions = [...s1, ...s2, ...s3, allQuestions.boss];
+            currentQuestionIndex = 0; score = 0; combo = 0; maxCombo = 0;
+
+            document.getElementById('result-area').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            document.getElementById('combo-display').textContent = "";
+            
+            updateProgress();
+            showQuestion();
+        }
+
+        function showQuestion() {
+            document.getElementById('explanation-area').style.display = 'none';
+            const qData = currentQuestions[currentQuestionIndex];
+            const choicesArea = document.getElementById('choices-area');
+            const stageInfo = document.getElementById('stage-info');
+            const missionLabel = document.getElementById('mission-label');
+            
+            if(currentQuestionIndex < 3) { stageInfo.textContent = "🧼 調査1：きがえと手洗いのヒミツ"; missionLabel.textContent = "安全を守るルールをさぐれ！"; }
+            else if(currentQuestionIndex < 7) { stageInfo.textContent = "⚙️ 調査2：機械と人のヒミツ"; missionLabel.textContent = "作り方のヒミツをさぐれ！"; }
+            else if(currentQuestionIndex < 9) { stageInfo.textContent = "🚚 調査3：運ぶ・届けるヒミツ"; missionLabel.textContent = "新鮮に届けるヒミツをさぐれ！"; }
+            else { stageInfo.textContent = "👑 最終調査：工場長のねがい"; missionLabel.textContent = "さいごの試練だ！"; }
+
+            document.getElementById('question-text').textContent = `Q${currentQuestionIndex + 1}. ${qData.q}`;
+            
+            choicesArea.innerHTML = '';
+            const shuffledChoices = shuffleArray(qData.c);
+
+            shuffledChoices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = choice;
+                btn.onclick = () => checkAnswer(choice, qData.a, qData.exp, btn);
+                choicesArea.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct, expText, btn) {
+            const buttons = document.querySelectorAll('.choice-btn');
+            buttons.forEach(b => b.disabled = true);
+
+            if (selected === correct) {
+                playSound('correct');
+                btn.style.backgroundColor = '#c5cae9';
+                btn.style.color = '#1a237e';
+                btn.innerHTML = "⭕ ヒミツはっけん！<br>" + btn.textContent;
+                score++; combo++;
+                if(combo > maxCombo) maxCombo = combo;
+                if(combo > 1) document.getElementById('combo-display').textContent = `${combo} 連続正解中！🔥`;
+            } else {
+                playSound('incorrect');
+                btn.style.backgroundColor = '#ffcdd2';
+                btn.innerHTML = "❌ ちがうみたいだ！<br>" + btn.textContent;
+                combo = 0; document.getElementById('combo-display').textContent = "";
+                buttons.forEach(b => {
+                    if(b.textContent === correct) {
+                        b.style.backgroundColor = '#c5cae9';
+                        b.innerHTML = "⭕ こっちが正解！<br>" + b.textContent;
+                    }
+                });
+            }
+            document.getElementById('explanation-text').textContent = expText;
+            document.getElementById('explanation-area').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            updateProgress();
+            if (currentQuestionIndex < currentQuestions.length) { showQuestion(); } else { showResult(); }
+        }
+
+        function updateProgress() {
+            const percentage = (currentQuestionIndex / 10) * 100;
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('player-icon').style.left = percentage + '%';
+        }
+
+        function showResult() {
+            playSound('clear');
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('result-area').style.display = 'block';
+            document.getElementById('score').textContent = score;
+            document.getElementById('max-combo').textContent = maxCombo;
+
+            let rank = "";
+            if (score === 10) rank = "👑 すばらしい！きみは「特級・工場たんてい」だ！";
+            else if (score >= 8) rank = "🎖️ すごい！「ベテランはっけん隊員」だ！";
+            else if (score >= 5) rank = "🕵️ よくがんばった！「一人前はっけん隊員」だ！";
+            else rank = "🐣 まだまだこれから！「みならい隊員」だ！";
+            document.getElementById('rank-text').textContent = rank;
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
