@@ -57,9 +57,22 @@
         .question-text {
             font-size: 1.3em;
             font-weight: bold;
-            margin-bottom: 20px;
-            min-height: 3em;
+            margin-bottom: 10px;
+            min-height: 2em;
         }
+        /* 地図記号を表示するエリア */
+        .question-image {
+            margin: 0 auto 20px auto;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .question-image svg {
+            /* 少し影をつけて見やすく */
+            filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.1));
+        }
+        
         .choices {
             display: flex;
             flex-direction: column;
@@ -112,6 +125,8 @@
         <div id="stage-info" style="color: #666; font-weight: bold; margin-bottom: 10px;"></div>
         <div class="question-text" id="question-text">ロード中...</div>
         
+        <div class="question-image" id="question-image"></div>
+        
         <div class="choices" id="choices-area">
             </div>
     </div>
@@ -126,26 +141,21 @@
     </div>
 
     <script>
-        // --- 効果音のしくみ（Web Audio API） ---
+        // --- 効果音のしくみ (Web Audio API) ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
 
         function playTone(freq, type, duration, vol=0.1) {
             if (!audioCtx) audioCtx = new AudioContext();
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
-            
             oscillator.type = type;
             oscillator.frequency.value = freq;
-            
             gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-            
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-            
             oscillator.start();
             oscillator.stop(audioCtx.currentTime + duration);
         }
@@ -159,50 +169,60 @@
                 setTimeout(() => playTone(200, 'sawtooth', 0.3, 0.2), 150);
             } else if (type === 'clear') {
                 playTone(523.25, 'square', 0.15); // ド
-                setTimeout(() => playTone(523.25, 'square', 0.15), 150); // ド
-                setTimeout(() => playTone(523.25, 'square', 0.15), 300); // ド
+                setTimeout(() => playTone(523.25, 'square', 0.15), 150);
+                setTimeout(() => playTone(523.25, 'square', 0.15), 300);
                 setTimeout(() => playTone(783.99, 'square', 0.4), 450);  // ソ
             }
         }
         // ------------------------------------
 
-        // 送っていただいた画像をもとに作成した30問のデータ
+        // ★自信を持って表示できる単純な記号のみ厳選（SVGデータ）
+        const symbols = {
+            school: `<svg width="80" height="80" viewBox="0 0 100 100"><text x="50" y="82" font-size="80" text-anchor="middle" font-family="serif" font-weight="bold">文</text></svg>`,
+            post: `<svg width="80" height="80" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" stroke="black" stroke-width="6" fill="none"/><text x="50" y="75" font-size="70" text-anchor="middle" font-family="sans-serif" font-weight="bold">〒</text></svg>`,
+            koban: `<svg width="80" height="80" viewBox="0 0 100 100"><line x1="20" y1="20" x2="80" y2="80" stroke="black" stroke-width="14"/><line x1="20" y1="80" x2="80" y2="20" stroke="black" stroke-width="14"/></svg>`,
+            temple: `<svg width="80" height="80" viewBox="0 0 100 100"><text x="50" y="80" font-size="80" text-anchor="middle" font-family="sans-serif">卍</text></svg>`,
+            library: `<svg width="80" height="80" viewBox="0 0 100 100"><path d="M 15 80 L 50 90 L 85 80 L 85 20 L 50 30 L 15 20 Z" fill="none" stroke="black" stroke-width="8" stroke-linejoin="round"/><line x1="50" y1="30" x2="50" y2="90" stroke="black" stroke-width="8"/></svg>`,
+            cityhall: `<svg width="80" height="80" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="black" stroke-width="10" fill="none"/><circle cx="50" cy="50" r="18" fill="black"/></svg>`
+        };
+
         const allQuestions = {
             stage1: [
-                { q: "方位（ほうい）を調べるための道具はどれ？", c: ["方位じしん", "温度計", "虫めがね", "時計"], a: "方位じしん" },
-                { q: "方位じしんの色がついた針は、ふつうどの方位をさす？", c: ["北", "南", "東", "西"], a: "北" },
-                { q: "方位は「東・西・南・〇」あと一つは？", c: ["北", "右", "上", "前"], a: "北" },
-                { q: "地図はふつう、どの方位が「上」になるようにかかれている？", c: ["北", "南", "東", "西"], a: "北" },
-                { q: "北が「上」じゃない地図には、何がかかれている？", c: ["方位をさめすしるし", "地図記号", "温度", "住所"], a: "方位をさめすしるし" },
-                { q: "まちたんけんで調べたことを、絵や図であらわしたものを何という？", c: ["絵地図", "写真", "ポスター", "カレンダー"], a: "絵地図" },
-                { q: "絵地図をかくとき、わかりやすくするための工夫はどれ？", c: ["色分けしてまとめる", "全部同じ色でかく", "文字だけでかく", "見なかったことにする"], a: "色分けしてまとめる" },
-                { q: "絵地図で、どんな場所かわかるように決めるものはどれ？", c: ["記号やしるし", "ねだん", "人の名前", "色だけのルール"], a: "記号やしるし" },
-                { q: "太陽がのぼる方角はどれかな？", c: ["東", "西", "南", "北"], a: "東" },
-                { q: "太陽がしずむ方角はどれかな？", c: ["西", "東", "南", "北"], a: "西" }
+                { q: "方位（ほうい）を調べるための道具はどれ？", img: "", c: ["方位じしん", "温度計", "虫めがね", "時計"], a: "方位じしん" },
+                { q: "方位じしんの色がついた針は、ふつうどの方位をさす？", img: "", c: ["北", "南", "東", "西"], a: "北" },
+                { q: "方位は「東・西・南・〇」あと一つは？", img: "", c: ["北", "右", "上", "前"], a: "北" },
+                { q: "地図はふつう、どの方位が「上」になるようにかかれている？", img: "", c: ["北", "南", "東", "西"], a: "北" },
+                { q: "北が「上」じゃない地図には、何がかかれている？", img: "", c: ["方位をさめすしるし", "地図記号", "温度", "住所"], a: "方位をさめすしるし" },
+                { q: "まちたんけんで調べたことを、絵や図であらわしたものを何という？", img: "", c: ["絵地図", "写真", "ポスター", "カレンダー"], a: "絵地図" },
+                { q: "絵地図をかくとき、わかりやすくするための工夫はどれ？", img: "", c: ["色分けしてまとめる", "全部同じ色でかく", "文字だけでかく", "見なかったことにする"], a: "色分けしてまとめる" },
+                { q: "絵地図で、どんな場所かわかるように決めるものはどれ？", img: "", c: ["記号やしるし", "ねだん", "人の名前", "色だけのルール"], a: "記号やしるし" },
+                { q: "太陽がのぼる方角はどれかな？", img: "", c: ["東", "西", "南", "北"], a: "東" },
+                { q: "太陽がしずむ方角はどれかな？", img: "", c: ["西", "東", "南", "北"], a: "西" }
             ],
+            // ★ステージ2：厳選した画像問題と、知識問題の組み合わせに変更
             stage2: [
-                { q: "「文」の形をした地図記号はなに？", c: ["学校", "交番", "図書館", "市役所"], a: "学校" },
-                { q: "「〒」のマークが入っている〇の地図記号はなに？", c: ["郵便局", "警察署", "病院", "工場"], a: "郵便局" },
-                { q: "「＋」のマークが入っている盾(たて)みたいな地図記号はなに？", c: ["病院", "消防署", "寺", "神社"], a: "病院" },
-                { q: "「×」の形をした地図記号はなに？", c: ["交番", "学校", "畑", "橋"], a: "交番" },
-                { q: "「Ｙ」みたいな形の下に線がある地図記号はなに？", c: ["消防署", "木", "果樹園", "警察署"], a: "消防署" },
-                { q: "「卍(まんじ)」の形をした地図記号はなに？", c: ["寺", "神社", "病院", "市役所"], a: "寺" },
-                { q: "鳥居(とりい)の形をした地図記号はなに？", c: ["神社", "寺", "学校", "博物館"], a: "神社" },
-                { q: "本を開いたような形の地図記号はなに？", c: ["図書館", "学校", "本屋", "博物館"], a: "図書館" },
-                { q: "太陽みたいなギザギザの丸の地図記号はなに？", c: ["工場", "発電所", "市役所", "交番"], a: "工場" },
-                { q: "二重丸（◎）の地図記号はなに？", c: ["市役所", "警察署", "郵便局", "病院"], a: "市役所" }
+                { q: "この地図記号はなにをあらわしているかな？", img: symbols.school, c: ["学校", "交番", "図書館", "市役所"], a: "学校" },
+                { q: "この地図記号はなにをあらわしているかな？", img: symbols.post, c: ["郵便局", "警察署", "病院", "工場"], a: "郵便局" },
+                { q: "この地図記号はなにをあらわしているかな？", img: symbols.koban, c: ["交番", "学校", "畑", "橋"], a: "交番" },
+                { q: "この地図記号はなにをあらわしているかな？", img: symbols.temple, c: ["寺", "神社", "病院", "市役所"], a: "寺" },
+                { q: "この地図記号はなにをあらわしているかな？", img: symbols.library, c: ["図書館", "学校", "本屋", "博物館"], a: "図書館" },
+                { q: "この地図記号はなにをあらわしているかな？", img: symbols.cityhall, c: ["市役所", "警察署", "郵便局", "病院"], a: "市役所" },
+                { q: "地図記号は何のために決まっているの？", img: "", c: ["地図をわかりやすくするため", "地図をかっこよくするため", "暗号ごっこをするため", "特にいみはない"], a: "地図をわかりやすくするため" },
+                { q: "消防署（しょうぼうしょ）の地図記号のもとになった道具はなに？", img: "", c: ["さすまた", "ホース", "はしご車", "ヘルメット"], a: "さすまた" },
+                { q: "警察署（けいさつしょ）の地図記号のもとになった道具はなに？", img: "", c: ["警棒（けいぼう）", "手錠（てじょう）", "パトカー", "ピストル"], a: "警棒（けいぼう）" },
+                { q: "病院などの地図記号を決めている国の役所はどこ？", img: "", c: ["国土地理院", "文部科学省", "宮内庁", "気象庁"], a: "国土地理院" }
             ],
             stage3: [
-                { q: "みんなのためにつくられた施設を何という？", c: ["公共しせつ", "お店", "工場", "遊園地"], a: "公共しせつ" },
-                { q: "次の中で「公共しせつ」はどれ？", c: ["図書館", "スーパー", "ケーキ屋", "くつ屋"], a: "図書館" },
-                { q: "まちたんけんで、気づいたことをのこすために使うものは？", c: ["メモやカード", "お金", "おもちゃ", "おかし"], a: "メモやカード" },
-                { q: "メモには、文字のほかに何をかくとわかりやすい？", c: ["絵や写真", "音楽", "におい", "味"], a: "絵や写真" },
-                { q: "古い建物が多いのはどんなところ？", c: ["寺や神社", "スーパー", "コンビニ", "新しいマンション"], a: "寺や神社" },
-                { q: "次の中で「公共しせつ」ではないものはどれ？", c: ["スーパーマーケット", "公民館", "消防署", "警察署"], a: "スーパーマーケット" },
-                { q: "病院はどんな場所？", c: ["病気やケガをなおすところ", "本を借りるところ", "お金をあずけるところ", "買い物するところ"], a: "病気やケガをなおすところ" },
-                { q: "警察署や交番の人は何をしてくれる？", c: ["まちの安全を守る", "火事を消す", "手紙を届ける", "パンを焼く"], a: "まちの安全を守る" },
-                { q: "消防署の人は何をしてくれる？", c: ["火事を消す", "どろぼうをつかまえる", "本を貸す", "病気をなおす"], a: "火事を消す" },
-                { q: "本がたくさんおいてあり、だれでも借りられる場所は？", c: ["図書館", "公民館", "市役所", "博物館"], a: "図書館" }
+                { q: "みんなのためにつくられた施設を何という？", img: "", c: ["公共しせつ", "お店", "工場", "遊園地"], a: "公共しせつ" },
+                { q: "次の中で「公共しせつ」はどれ？", img: "", c: ["図書館", "スーパー", "ケーキ屋", "くつ屋"], a: "図書館" },
+                { q: "まちたんけんで、気づいたことをのこすために使うものは？", img: "", c: ["メモやカード", "お金", "おもちゃ", "おかし"], a: "メモやカード" },
+                { q: "メモには、文字のほかに何をかくとわかりやすい？", img: "", c: ["絵や写真", "音楽", "におい", "味"], a: "絵や写真" },
+                { q: "古い建物が多いのはどんなところ？", img: "", c: ["寺や神社", "スーパー", "コンビニ", "新しいマンション"], a: "寺や神社" },
+                { q: "次の中で「公共しせつ」ではないものはどれ？", img: "", c: ["スーパーマーケット", "公民館", "消防署", "警察署"], a: "スーパーマーケット" },
+                { q: "病院はどんな場所？", img: "", c: ["病気やケガをなおすところ", "本を借りるところ", "お金をあずけるところ", "買い物するところ"], a: "病気やケガをなおすところ" },
+                { q: "警察署や交番の人は何をしてくれる？", img: ["まちの安全を守る", "火事を消す", "手紙を届ける", "パンを焼く"], a: "まちの安全を守る" },
+                { q: "消防署の人は何をしてくれる？", img: "", c: ["火事を消す", "どろぼうをつかまえる", "本を貸す", "病気をなおす"], a: "火事を消す" },
+                { q: "本がたくさんおいてあり、だれでも借りられる場所は？", img: "", c: ["図書館", "公民館", "市役所", "博物館"], a: "図書館" }
             ]
         };
 
@@ -243,6 +263,7 @@
             const qData = currentQuestions[currentQuestionIndex];
             const choicesArea = document.getElementById('choices-area');
             const stageInfo = document.getElementById('stage-info');
+            const questionImage = document.getElementById('question-image');
             
             if(currentQuestionIndex < 3) stageInfo.textContent = "🗺️ ステージ1：方位と地図のきまり";
             else if(currentQuestionIndex < 6) stageInfo.textContent = "🔍 ステージ2：地図記号のなぞ";
@@ -250,8 +271,16 @@
             else stageInfo.textContent = "👹 さいごの試練：まちのひみつボス！";
 
             document.getElementById('question-text').textContent = `第 ${currentQuestionIndex + 1} 問： ${qData.q}`;
-            choicesArea.innerHTML = '';
+            
+            if(qData.img) {
+                questionImage.innerHTML = qData.img;
+                questionImage.style.display = 'flex';
+            } else {
+                questionImage.innerHTML = '';
+                questionImage.style.display = 'none';
+            }
 
+            choicesArea.innerHTML = '';
             const shuffledChoices = shuffleArray(qData.c);
 
             shuffledChoices.forEach(choice => {
@@ -268,12 +297,12 @@
             buttons.forEach(b => b.disabled = true);
 
             if (selected === correct) {
-                playSound('correct'); // ★正解の音を鳴らす
+                playSound('correct');
                 btn.style.backgroundColor = '#81c784';
                 btn.textContent = "⭕ せいかい！ " + btn.textContent;
                 score++;
             } else {
-                playSound('incorrect'); // ★不正解の音を鳴らす
+                playSound('incorrect');
                 btn.style.backgroundColor = '#e57373';
                 btn.textContent = "❌ ざんねん！ " + btn.textContent;
                 buttons.forEach(b => {
@@ -302,7 +331,7 @@
         }
 
         function showResult() {
-            playSound('clear'); // ★クリアの音を鳴らす
+            playSound('clear');
 
             document.getElementById('game-area').style.display = 'none';
             document.getElementById('result-area').style.display = 'block';
