@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⑤ 火事からまちを守る - たんけんクエスト</title>
+    <style>
+        body { font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif; background-color: #fff3e0; color: #333; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #d32f2f; margin-bottom: 5px;}
+        .game-container { background-color: white; max-width: 600px; margin: 0 auto; border-radius: 15px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 4px solid #f44336; }
+        
+        .status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; }
+        .combo-text { color: #d84315; font-size: 1.2em; animation: bounce 0.3s ease; }
+        @keyframes bounce { 0% {transform: scale(1);} 50% {transform: scale(1.2);} 100% {transform: scale(1);} }
+
+        .progress-container { width: 100%; background-color: #ddd; border-radius: 10px; margin-bottom: 20px; height: 30px; position: relative; }
+        .progress-bar { height: 100%; background-color: #f44336; border-radius: 10px; width: 0%; transition: width 0.5s ease; }
+        .player-icon { position: absolute; top: -10px; left: 0%; font-size: 30px; transition: left 0.5s ease; transform: translateX(-50%); }
+        .goal-icon { position: absolute; top: 0; right: 5px; font-size: 20px; }
+        
+        /* 消防士風の問題文エリア */
+        .mission-label { background-color: #d32f2f; color: white; border-radius: 5px; padding: 5px 10px; font-size: 0.9em; display: inline-block; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px;}
+        .question-text { font-size: 1.2em; margin-bottom: 20px; font-weight: bold; min-height: 2em; line-height: 1.4; border-left: 5px solid #d32f2f; padding-left: 10px; text-align: left; }
+
+        /* グラフエリア */
+        #graph-area { display: none; background-color: #fafafa; border: 2px solid #ccc; border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: left; }
+        .graph-title { font-weight: bold; color: #555; margin-bottom: 10px; text-align: center;}
+        .bar-row { display: flex; align-items: center; margin-bottom: 8px; }
+        .bar-label { width: 80px; font-weight: bold; font-size: 0.9em; }
+        .bar-track { flex-grow: 1; background-color: #eee; border-radius: 5px; height: 20px; overflow: hidden; position: relative; }
+        .bar-fill { height: 100%; border-radius: 5px; transition: width 1s ease-out; }
+        .bar-value { width: 40px; text-align: right; font-size: 0.9em; font-weight: bold; color: #d32f2f;}
+
+        .choices { display: flex; flex-direction: column; gap: 10px; }
+        .choice-btn { background-color: #ffebee; border: 2px solid #ef9a9a; border-radius: 10px; padding: 15px; font-size: 1.1em; cursor: pointer; transition: all 0.2s; font-weight: bold; color: #b71c1c; }
+        .choice-btn:hover { background-color: #ffcdd2; transform: translateY(-2px); }
+        .choice-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+
+        #explanation-area { display: none; margin-top: 20px; padding: 15px; background-color: #e3f2fd; border: 2px dashed #1976d2; border-radius: 10px; text-align: left; font-size: 1.1em; color: #0d47a1; }
+        .next-btn { margin-top: 15px; padding: 15px 30px; background-color: #1976d2; color: white; border: none; border-radius: 30px; font-size: 1.2em; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 0 #0d47a1; }
+        .next-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        #result-area { display: none; }
+        .result-title { font-size: 2em; color: #d32f2f; margin-bottom: 10px; }
+        .reflection-box { background-color: #fff9c4; border: 2px solid #fbc02d; border-radius: 10px; padding: 15px; margin: 20px 0; text-align: left; }
+        .back-btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #d32f2f; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>🚒 めざせ！一流消防士</h1>
+    <p style="margin-top:0;">火事からまちを守る、消防のしくみや工夫を学ぼう！</p>
+
+    <div class="game-container" id="game-area">
+        <div class="status-bar">
+            <span id="stage-info" style="color: #666;"></span>
+            <span id="combo-display" class="combo-text"></span>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="player-icon" id="player-icon">🧑‍🚒</div>
+            <div class="goal-icon">🚨</div>
+        </div>
+
+        <div class="mission-label" id="mission-label">訓練開始！</div>
+        
+        <div id="graph-area">
+            <div class="graph-title">📊 日本の火事のげんいん（順位）</div>
+            <div class="bar-row"><span class="bar-label">たばこ</span><div class="bar-track"><div class="bar-fill" style="width: 0%; background-color: #f44336;" data-width="90%"></div></div><span class="bar-value">1位</span></div>
+            <div class="bar-row"><span class="bar-label">たき火</span><div class="bar-track"><div class="bar-fill" style="width: 0%; background-color: #ff9800;" data-width="70%"></div></div><span class="bar-value">2位</span></div>
+            <div class="bar-row"><span class="bar-label">コンロ</span><div class="bar-track"><div class="bar-fill" style="width: 0%; background-color: #ffb300;" data-width="60%"></div></div><span class="bar-value">3位</span></div>
+            <div class="bar-row"><span class="bar-label">放火</span><div class="bar-track"><div class="bar-fill" style="width: 0%; background-color: #8d6e63;" data-width="45%"></div></div><span class="bar-value">4位</span></div>
+        </div>
+
+        <div class="question-text" id="question-text">ロード中...</div>
+        
+        <div class="choices" id="choices-area"></div>
+
+        <div id="explanation-area">
+            <div style="font-weight:bold; margin-bottom:5px;">💧 消火完了メモ（なぜかな？）</div>
+            <div id="explanation-text"></div>
+            <button class="next-btn" onclick="nextQuestion()">次の出動へ ➡️</button>
+        </div>
+    </div>
+
+    <div class="game-container" id="result-area">
+        <div class="result-title">本日の訓練 しゅうりょう！</div>
+        <p style="font-size: 1.5em;">正しい判断：<span id="score"></span> / 10</p>
+        <p style="font-size: 1.2em; color: #d84315; font-weight: bold;">最大連続正解：<span id="max-combo"></span> コンボ！</p>
+        <div id="rank-text" style="font-size: 1.3em; font-weight: bold; margin: 10px 0;"></div>
+        
+        <div class="reflection-box">
+            <h3 style="margin-top:0; color: #f57f17;">📝 ノートにふり返りを書こう！</h3>
+            <p>消防士さんたちのくふうや、まちの設備で<b>「なるほど！」「すごいな！」</b>と思ったことは何かな？<br>また、自分たちでできる「火事の予防」と一緒にノートにまとめてみよう。</p>
+        </div>
+
+        <button class="choice-btn" style="width:100%; margin-bottom:10px; background-color:#fff3e0;" onclick="initGame()">もういちど 訓練する</button>
+        <a href="index.html" class="back-btn" style="width:90%;">🏠 ポータルにもどる</a>
+    </div>
+
+    <script>
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function playTone(freq, type, duration, vol=0.1) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = type;
+            oscillator.frequency.value = freq;
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+        function playSound(type) {
+            if (type === 'correct') { playTone(523.25, 'sine', 0.1); setTimeout(() => playTone(659.25, 'sine', 0.2), 100); }
+            else if (type === 'incorrect') { playTone(250, 'sawtooth', 0.2, 0.2); setTimeout(() => playTone(200, 'sawtooth', 0.3, 0.2), 150); }
+            else if (type === 'clear') { playTone(523.25, 'square', 0.15); setTimeout(() => playTone(523.25, 'square', 0.15), 150); setTimeout(() => playTone(523.25, 'square', 0.15), 300); setTimeout(() => playTone(1046.50, 'square', 0.4), 450); }
+        }
+
+        // 全16問の問題プール（グラフ問題含む）
+        const allQuestions = {
+            stage1: [ // 119番と通信指令室
+                { q: "「火事だ！」を見つけたとき、一番に電話をかける番号は何番？", c: ["１１９番", "１１０番", "１１７番"], a: "１１９番", exp: "火事と救急は「１１９番」！ちなみに１１０番は警察、１１７番は時報（時間）だよ。" },
+                { q: "１１９番に電話をかけると、どこの部屋につながる？", c: ["消防本部の通信指令室（つうしんしれいしつ）", "近くの交番", "市役所の受付"], a: "消防本部の通信指令室（つうしんしれいしつ）", exp: "市全体の１１９番は、いったん「通信指令室」につながり、そこから一番近い消防署に出動の命令が出されるんだ。" },
+                { q: "通信指令室で１１９番を受けるとき、すぐに特定する一番大切な情報はどれ？", c: ["火事が起きている「場所」", "電話をかけてきた人の「趣味」", "あしたの「天気」"], a: "火事が起きている「場所」", exp: "GPSや地図のシステムを使って、どこで起きているかを一瞬で特定し、すぐに消防車を向かわせるんだよ。" },
+                { q: "消防士さんが、夜中やいつでも「すぐ」に出動できるようにしている工夫は？", c: ["服や靴を、すぐ着がえられるようにそろえておく", "全員が絶対に寝ないで起きておく", "電話が鳴るまでゲームをして待つ"], a: "服や靴を、すぐ着がえられるようにそろえておく", exp: "２４時間いつでも出動できるように交代で仮眠（少し寝ること）をとるけど、服や靴は１秒でも早く着られるようにセットしてあるんだ！" },
+                { q: "火事の現場へ向かう消防車。どうしてあんなに早く到着できるの？", c: ["サイレンを鳴らし、周りの車に道をゆずってもらうから", "空を飛べるから", "ものすごいスピードで走るから"], a: "サイレンを鳴らし、周りの車に道をゆずってもらうから", exp: "サイレンの音を聞いたら、みんなが車を道の端に寄せて止まり、消防車を通してくれるから早く着けるんだね。" }
+            ],
+            stage2: [ // 消防の仕事と設備
+                { q: "消防署の仕事は「火を消す（消火）」だけじゃないよ。けがや病気の人を病院に急いで運ぶ仕事は？", c: ["救急（きゅうきゅう）", "救助（きゅうじょ）", "配達（はいたつ）"], a: "救急（きゅうきゅう）", exp: "白い車「救急車」に乗って、けがや急病の人に応急手当をしながら急いで病院へ運ぶんだ。" },
+                { q: "地震で崩れた家や、事故の車に閉じ込められた人を助け出す仕事は？", c: ["救助（レスキュー）", "消火（しょうか）", "探検（たんけん）"], a: "救助（レスキュー）", exp: "特別なロープや機械を使って、危険な場所から人を安全に助け出すレスキュー隊の仕事だよ。" },
+                { q: "消防車が火を消すとき、道路にある「これ」にホースをつないで水をもらいます。何かな？", c: ["消火栓（しょうかせん）", "マンホール", "郵便ポスト"], a: "消火栓（しょうかせん）", exp: "道路の下にある水道管から水をくみ上げる設備。黄色い枠で囲まれていて、上に車を停めちゃダメなんだ。" },
+                { q: "地震のときなど、水道が使えなくても火を消せるように、地下に水をためておく設備は？", c: ["防火水槽（ぼうかすいそう）", "地下プール", "ため池"], a: "防火水槽（ぼうかすいそう）", exp: "まちのいろいろな場所の地下に作られていて、いざという時のための「水の貯金箱」だよ。" },
+                { q: "消防士さんが火の海に入るときに着る「防火衣（ぼうかい）」の特徴は？", c: ["熱や火を通さない、強くて重い服", "涼しくて軽い、Ｔシャツみたいな服", "水に浮く水着"], a: "熱や火を通さない、強くて重い服", exp: "約10キログラムもある重くて特別な服で、1000度近い火の熱からも体を守ってくれるんだ！" }
+            ],
+            stage3: [ // グラフ読み取りと予防
+                { q: "上の「火事のげんいんグラフ」を見て答えよう。一番多い原因（１位）は何？", c: ["たばこ", "たき火", "コンロ"], a: "たばこ", exp: "たばこのポイ捨てや、火を完全に消さなかったことが原因で起きる火事が一番多いんだ。気をつけなきゃね！", useGraph: true },
+                { q: "「火事のげんいんグラフ」を見て答えよう。料理をしているときに気をつけないといけない原因（３位）はどれ？", c: ["コンロ", "たき火", "放火"], a: "コンロ", exp: "火をつけたまま台所から離れてしまって、油に火がつくことが多いんだ。料理中は目を離しちゃダメだね。", useGraph: true },
+                { q: "学校やビルにある、火事を見つけたときに「ジリリリ！」と鳴らす赤いボタンは？", c: ["火災報知器（かさいほうちき）", "エレベーターのボタン", "チャイム"], a: "火災報知器（かさいほうちき）", exp: "ボタンを押すとベルが鳴って、建物の中にいる人みんなに「火事だ！逃げて！」と知らせることができるんだ。" },
+                { q: "まちの人たちが自分たちで作っている、火事のときに消防署と一緒に活躍するグループは？", c: ["消防団（しょうぼうだん）", "探検隊（たんけんたい）", "スポーツ少年団"], a: "消防団（しょうぼうだん）", exp: "普段は別の仕事をしているまちの人たちが、火事や地震のときに集まって、まちを守ってくれる心強い味方だよ。" }
+            ],
+            boss: { 
+                q: "みんなのまちを火事から守るために、一番大切なことはどれだと思う？", 
+                c: ["一人ひとりが火の用心に気をつけ、地域の「消防団」などと協力しあうこと", "消防士さんに全部まかせて、自分たちは何もしないこと", "火事になりそうなものは、ぜんぶ土に埋めること"], 
+                a: "一人ひとりが火の用心に気をつけ、地域の「消防団」などと協力しあうこと", 
+                exp: "素晴らしい！消防署の力だけじゃなく、みんなが「火事に気をつけよう！」と協力する心こそが、まちを守る最強の力なんだ！" 
+            }
+        };
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0, combo = 0, maxCombo = 0;
+
+        function shuffleArray(array) { const newArray = [...array]; for (let i = newArray.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [newArray[i], newArray[j]] = [newArray[j], newArray[i]]; } return newArray; }
+
+        function initGame() {
+            // ランダムに抽出
+            const s1 = shuffleArray(allQuestions.stage1).slice(0, 3);
+            const s2 = shuffleArray(allQuestions.stage2).slice(0, 4);
+            const s3 = shuffleArray(allQuestions.stage3).slice(0, 2);
+            
+            currentQuestions = [...s1, ...s2, ...s3, allQuestions.boss];
+            currentQuestionIndex = 0; score = 0; combo = 0; maxCombo = 0;
+
+            document.getElementById('result-area').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            document.getElementById('combo-display').textContent = "";
+            
+            updateProgress();
+            showQuestion();
+        }
+
+        function showQuestion() {
+            document.getElementById('explanation-area').style.display = 'none';
+            const qData = currentQuestions[currentQuestionIndex];
+            const choicesArea = document.getElementById('choices-area');
+            const stageInfo = document.getElementById('stage-info');
+            const missionLabel = document.getElementById('mission-label');
+            const graphArea = document.getElementById('graph-area');
+            
+            // グラフの表示制御とアニメーション
+            if(qData.useGraph) {
+                graphArea.style.display = 'block';
+                // バーのアニメーションをリセットして再実行
+                const fills = document.querySelectorAll('.bar-fill');
+                fills.forEach(fill => {
+                    fill.style.width = '0%';
+                    setTimeout(() => { fill.style.width = fill.getAttribute('data-width'); }, 100);
+                });
+            } else {
+                graphArea.style.display = 'none';
+            }
+
+            if(currentQuestionIndex < 3) { stageInfo.textContent = "📞 訓練1：119番のしくみ"; missionLabel.textContent = "スピード出動のひみつだ！"; }
+            else if(currentQuestionIndex < 7) { stageInfo.textContent = "🚒 訓練2：消防の仕事と設備"; missionLabel.textContent = "現場でかつやくする道具だ！"; }
+            else if(currentQuestionIndex < 9) { stageInfo.textContent = "📊 訓練3：火事の予防"; missionLabel.textContent = "原因をさぐり、予防せよ！"; }
+            else { stageInfo.textContent = "👑 最終訓練：消防の心"; missionLabel.textContent = "さいごの試練だ！"; }
+
+            document.getElementById('question-text').textContent = `Q${currentQuestionIndex + 1}. ${qData.q}`;
+            
+            choicesArea.innerHTML = '';
+            const shuffledChoices = shuffleArray(qData.c);
+
+            shuffledChoices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = choice;
+                btn.onclick = () => checkAnswer(choice, qData.a, qData.exp, btn);
+                choicesArea.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct, expText, btn) {
+            const buttons = document.querySelectorAll('.choice-btn');
+            buttons.forEach(b => b.disabled = true);
+
+            if (selected === correct) {
+                playSound('correct');
+                btn.style.backgroundColor = '#d32f2f';
+                btn.style.color = '#fff';
+                btn.innerHTML = "⭕ 正解！よくやった！<br>" + btn.textContent;
+                score++; combo++;
+                if(combo > maxCombo) maxCombo = combo;
+                if(combo > 1) document.getElementById('combo-display').textContent = `${combo} 連続正解中！🔥`;
+            } else {
+                playSound('incorrect');
+                btn.style.backgroundColor = '#9e9e9e';
+                btn.style.color = '#fff';
+                btn.innerHTML = "❌ 失敗！つぎこそは！<br>" + btn.textContent;
+                combo = 0; document.getElementById('combo-display').textContent = "";
+                buttons.forEach(b => {
+                    if(b.textContent === correct) {
+                        b.style.backgroundColor = '#d32f2f';
+                        b.style.color = '#fff';
+                        b.innerHTML = "⭕ こっちが正解だ！<br>" + b.textContent;
+                    }
+                });
+            }
+            document.getElementById('explanation-text').textContent = expText;
+            document.getElementById('explanation-area').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            updateProgress();
+            if (currentQuestionIndex < currentQuestions.length) { showQuestion(); } else { showResult(); }
+        }
+
+        function updateProgress() {
+            const percentage = (currentQuestionIndex / 10) * 100;
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('player-icon').style.left = percentage + '%';
+        }
+
+        function showResult() {
+            playSound('clear');
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('result-area').style.display = 'block';
+            document.getElementById('score').textContent = score;
+            document.getElementById('max-combo').textContent = maxCombo;
+
+            let rank = "";
+            if (score === 10) rank = "👑 伝説のレスキュー隊長！まちの平和は君が守る！";
+            else if (score >= 8) rank = "🚒 一流の消防士！頼りになるぞ！";
+            else if (score >= 5) rank = "🧑‍🚒 一人前の消防団員！もっと訓練にはげもう！";
+            else rank = "🐣 みならい消防士！まずは火の用心からだ！";
+            document.getElementById('rank-text').textContent = rank;
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
