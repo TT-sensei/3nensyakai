@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⑦ まちのうつりかわり - たんけんクエスト</title>
+    <style>
+        body { font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif; background-color: #f3e5f5; color: #333; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #4a148c; margin-bottom: 5px;}
+        .game-container { background-color: white; max-width: 600px; margin: 0 auto; border-radius: 15px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 4px solid #7b1fa2; }
+        
+        .status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; }
+        .combo-text { color: #ff8f00; text-shadow: 1px 1px 2px #fff8e1; font-size: 1.2em; animation: bounce 0.3s ease; }
+        @keyframes bounce { 0% {transform: scale(1);} 50% {transform: scale(1.2);} 100% {transform: scale(1);} }
+
+        .progress-container { width: 100%; background-color: #ddd; border-radius: 10px; margin-bottom: 20px; height: 30px; position: relative; }
+        .progress-bar { height: 100%; background-color: #7b1fa2; border-radius: 10px; width: 0%; transition: width 0.5s ease; }
+        .player-icon { position: absolute; top: -10px; left: 0%; font-size: 30px; transition: left 0.5s ease; transform: translateX(-50%); }
+        .goal-icon { position: absolute; top: 0; right: 5px; font-size: 20px; }
+        
+        /* タイムパトロール風の問題文エリア */
+        .mission-label { background-color: #4a148c; color: white; border-radius: 5px; padding: 5px 10px; font-size: 0.9em; display: inline-block; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px;}
+        .question-text { font-size: 1.2em; margin-bottom: 20px; font-weight: bold; min-height: 2em; line-height: 1.4; border-left: 5px solid #8e24aa; padding-left: 10px; text-align: left; }
+
+        /* グラフエリア */
+        #graph-area { display: none; background-color: #fff3e0; border: 2px solid #ffb300; border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: left; }
+        .graph-title { font-weight: bold; color: #e65100; margin-bottom: 10px; text-align: center;}
+        .bar-row { display: flex; align-items: center; margin-bottom: 8px; }
+        .bar-label { width: 100px; font-weight: bold; font-size: 0.9em; color: #555; }
+        .bar-track { flex-grow: 1; background-color: #ffe0b2; border-radius: 5px; height: 20px; overflow: hidden; position: relative; }
+        .bar-fill { height: 100%; border-radius: 5px; transition: width 1s ease-out; }
+
+        .choices { display: flex; flex-direction: column; gap: 10px; }
+        .choice-btn { background-color: #f3e5f5; border: 2px solid #ba68c8; border-radius: 10px; padding: 15px; font-size: 1.1em; cursor: pointer; transition: all 0.2s; font-weight: bold; color: #4a148c; }
+        .choice-btn:hover { background-color: #e1bee7; transform: translateY(-2px); }
+        .choice-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+
+        #explanation-area { display: none; margin-top: 20px; padding: 15px; background-color: #e8f5e9; border: 2px dashed #43a047; border-radius: 10px; text-align: left; font-size: 1.1em; color: #1b5e20; }
+        .next-btn { margin-top: 15px; padding: 15px 30px; background-color: #4a148c; color: white; border: none; border-radius: 30px; font-size: 1.2em; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 0 #311b92; }
+        .next-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        #result-area { display: none; }
+        .result-title { font-size: 2em; color: #4a148c; margin-bottom: 10px; }
+        .reflection-box { background-color: #fff9c4; border: 2px solid #fbc02d; border-radius: 10px; padding: 15px; margin: 20px 0; text-align: left; color: #333;}
+        .back-btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #7b1fa2; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>🚀 時空探検 タイムパトロール</h1>
+    <p style="margin-top:0;">タイムマシンに乗って、昔の道具やまちの移り変わりを調査しよう！</p>
+
+    <div class="game-container" id="game-area">
+        <div class="status-bar">
+            <span id="stage-info" style="color: #666;"></span>
+            <span id="combo-display" class="combo-text"></span>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="player-icon" id="player-icon">⏳</div>
+            <div class="goal-icon">🏙️</div>
+        </div>
+
+        <div class="mission-label" id="mission-label">タイムスリップ開始！</div>
+        
+        <div id="graph-area">
+            <div class="graph-title">📈 市の人口（人の数）のうつりかわり</div>
+            <div class="bar-row"><span class="bar-label">約100年前</span><div class="bar-track"><div class="bar-fill" style="width: 0%; background-color: #ab47bc;" data-width="15%"></div></div></div>
+            <div class="bar-row"><span class="bar-label">約50年前</span><div class="bar-track"><div class="bar-fill" style="width: 0%; background-color: #8e24aa;" data-width="60%"></div></div></div>
+            <div class="bar-row"><span class="bar-label">現在（いま）</span><div class="bar-track"><div class="bar-fill" style="width: 0%; background-color: #4a148c;" data-width="100%"></div></div></div>
+        </div>
+
+        <div class="question-text" id="question-text">ロード中...</div>
+        
+        <div class="choices" id="choices-area"></div>
+
+        <div id="explanation-area">
+            <div style="font-weight:bold; margin-bottom:5px;">💡 調査レポート（なぜかな？）</div>
+            <div id="explanation-text"></div>
+            <button class="next-btn" onclick="nextQuestion()">次の時代へ ➡️</button>
+        </div>
+    </div>
+
+    <div class="game-container" id="result-area">
+        <div class="result-title">タイムパトロール 完了！</div>
+        <p style="font-size: 1.5em;">正しい歴史の発見：<span id="score"></span> / 10</p>
+        <p style="font-size: 1.2em; color: #ff8f00; font-weight: bold;">最大連続正解：<span id="max-combo"></span> コンボ！</p>
+        <div id="rank-text" style="font-size: 1.3em; font-weight: bold; margin: 10px 0;"></div>
+        
+        <div class="reflection-box">
+            <h3 style="margin-top:0; color: #d84315;">📝 探検ノートにふり返りを書こう！</h3>
+            <p>電気がない昔から、今の便利な生活になるまで、まちはどう変わったかな？<br>昔の人の<b>「道具のくふう」</b>で、すごいなと思ったことをノートにまとめよう。</p>
+        </div>
+
+        <button class="choice-btn" style="width:100%; margin-bottom:10px; background-color:#e8eaf6;" onclick="initGame()">もういちど 別の時代へ</button>
+        <a href="index.html" class="back-btn" style="width:90%;">🏠 ポータルにもどる</a>
+    </div>
+
+    <script>
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function playTone(freq, type, duration, vol=0.1) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = type;
+            oscillator.frequency.value = freq;
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+        function playSound(type) {
+            if (type === 'correct') { playTone(523.25, 'sine', 0.1); setTimeout(() => playTone(659.25, 'sine', 0.2), 100); }
+            else if (type === 'incorrect') { playTone(250, 'sawtooth', 0.2, 0.2); setTimeout(() => playTone(200, 'sawtooth', 0.3, 0.2), 150); }
+            else if (type === 'clear') { playTone(523.25, 'square', 0.15); setTimeout(() => playTone(523.25, 'square', 0.15), 150); setTimeout(() => playTone(523.25, 'square', 0.15), 300); setTimeout(() => playTone(1046.50, 'square', 0.4), 450); }
+        }
+
+        // 全16問の問題プール（グラフ問題含む）
+        const allQuestions = {
+            stage1: [ // 昔の道具
+                { q: "ゴシゴシ…昔の人は「せんたく板」というデコボコした木の板で服を洗っていたぞ。今はどんな機械を使っている？", c: ["せんたく機", "れいぞうこ", "そうじ機"], a: "せんたく機", exp: "昔は川や井戸の水を使って、冷たい冬でも自分の手でゴシゴシ洗っていたんだよ。今はボタン一つで便利だね！" },
+                { q: "昔の「れいぞうこ」は木でできていて、電気で動かなかった。どうやって中を冷やしていたのかな？", c: ["上の段に「大きな氷」を入れた", "うちわで一生懸命あおいだ", "雪女にたのんだ"], a: "上の段に「大きな氷」を入れた", exp: "氷屋さんが運んでくる大きな氷を上に入れて、冷たい空気が下にいく仕組みを使って食べ物を冷やしていたんだ。" },
+                { q: "昔の「アイロン」は、鉄でできていてすごく重かった！熱くするために中に何を入れていた？", c: ["熱くもえた炭（すみ）", "あついお湯", "使い捨てカイロ"], a: "熱くもえた炭（すみ）", exp: "「炭火（すみび）アイロン」というんだ。やけどしないように、とても気をつけて服のシワをのばしていたんだよ。" },
+                { q: "昔の人は「七輪（しちりん）」を使って魚を焼いたりしていたよ。今はかわりに何を使うことが多い？", c: ["ガスコンロや電子レンジ", "エアコン", "扇風機（せんぷうき）"], a: "ガスコンロや電子レンジ", exp: "七輪は、炭に火をつけてうちわであおぐんだ。今はガスや電気ですぐに火がつくから、料理がとても早くなったね。" },
+                { q: "ほうきと「ちりとり」を使って家の中をそうじしていた昔。今の便利な機械はどれ？", c: ["そうじ機", "テレビ", "パソコン"], a: "そうじ機", exp: "昔はホコリがたたないように、ぬらした新聞紙をちぎってまいてから、ほうきで掃（は）くという工夫をしていたんだよ。" },
+                { q: "昔、ごはんを炊（た）くときは「かまど」に薪（まき）を入れて火をつけていたぞ。今は何を使っている？", c: ["すいはん機", "トースター", "ミキサー"], a: "すいはん機", exp: "かまどで火の強さを調節するのは、とっても難しい職人技だったんだ！今はすいはん機がおいしく炊いてくれるね。" }
+            ],
+            stage2: [ // まちの様子の移り変わり
+                { q: "約100年前のまちにタイムスリップ！駅のまわりは、どんな景色だったと思う？", c: ["田んぼや畑ばかりで、高い建物はなかった", "今よりも高いビルがたくさんあった", "宇宙船が飛んでいた"], a: "田んぼや畑ばかりで、高い建物はなかった", exp: "昔は農業をしている人が多く、駅のまわりにも緑がいっぱいだったんだ。そこから少しずつ家やお店が建っていったんだよ。" },
+                { q: "昔の道は土の道だったけれど、今は固い「アスファルト」の道が増えたよ。なぜだろう？", c: ["自動車が安全に、はやく走れるようにするため", "歩くと足の裏がマッサージされるから", "土を全部、外国に売ってしまったから"], a: "自動車が安全に、はやく走れるようにするため", exp: "自動車やトラックが増えたから、雨が降ってもドロドロにならない丈夫な道がたくさん作られたんだね。" },
+                { q: "昔の人たちが、遠くへ出かけるときによく使っていた方法はどれ？", c: ["歩くか、船や馬を使った", "新幹線（しんかんせん）", "飛行機（ひこうき）"], a: "歩くか、船や馬を使った", exp: "昔は電車や自動車がなかったから、何日もかけて歩いて旅をすることもあったんだ。今はあっという間だね。" },
+                { q: "まちの「夜の様子」はどう変わったかな？", c: ["街灯やビルの明かりで、夜でも明るくなった", "昔のほうが、電気の光でピカピカだった", "まったく変わっていない"], a: "街灯やビルの明かりで、夜でも明るくなった", exp: "昔は電気がなかったから、夜は本当に真っ暗だったんだ。月や星の光がとてもきれいに見えたそうだよ。" },
+                { q: "まちにあった「田んぼや畑」が減っていったのは、なぜだと思う？", c: ["人が増えて、家やビル、工場を建てる場所になったから", "みんな野菜が嫌いになったから", "鳥が全部食べてしまったから"], a: "人が増えて、家やビル、工場を建てる場所になったから", exp: "まちが便利になって人がたくさん引っ越してくると、住む場所や働く場所が必要になって、まちの景色が変わっていったんだ。" }
+            ],
+            stage3: [ // 人口のグラフとくらし
+                { q: "上の「人口のうつりかわりグラフ」を見てみよう。市の人の数は、昔から今へ向かってどうなっている？", c: ["どんどん増えている", "どんどん減っている", "まったく同じ"], a: "どんどん増えている", exp: "棒グラフが右にいくほど長くなっているね。少しずつ、たくさんの人がこのまちに住むようになった証拠（しょうこ）だね。", useGraph: true },
+                { q: "このまちに人がどんどん増えた一番の理由は、なんだと思う？", c: ["鉄道や道路ができ、会社や工場も増えて生活が便利になったから", "まちで毎日お祭りをやっていたから", "空から人が降ってきたから"], a: "鉄道や道路ができ、会社や工場も増えて生活が便利になったから", exp: "働く場所がたくさんあり、買い物や移動も便利になると、「このまちに住みたい！」と思う人が増えるんだね。", useGraph: true },
+                { q: "まちに住む子どもが増えると、まちの「あるもの」もたくさん作られます。なんだろう？", c: ["学校や公園", "大きなお城", "ジャングル"], a: "学校や公園", exp: "みんなが勉強して遊べるように、人口が増えるのにあわせて新しい学校や公園がどんどん作られていったんだよ。" },
+                { q: "くらしが便利になった一方で、昔のまちにあって、今のまちで減ってしまったものは何かな？", c: ["自然（しぜん）の緑や、虫などの生き物", "自動車", "コンビニエンスストア"], a: "自然（しぜん）の緑や、虫などの生き物", exp: "建物やアスファルトが増えたことで、豊かな自然は減ってしまったんだ。これからは、自然も大切にするまちづくりが必要だね。" }
+            ],
+            boss: { 
+                q: "タイムパトロール隊長からの問題だ！昔から今まで、まちは大きく変わった。でも、昔の道具やくらしから、今の私たちが「学べる大切なこと」は何かな？", 
+                c: ["ものを大切に使い、自然と一緒にくふうして生活する「知恵（ちえ）」", "古いものは全部捨てて、新しいものだけを買うこと", "昔の人は大変だったと笑うこと"], 
+                a: "ものを大切に使い、自然と一緒にくふうして生活する「知恵（ちえ）」", 
+                exp: "素晴らしい！電気やガスがなくても、自然の力を使って工夫していた昔の人たち。その「ものを大切にする心」は、未来にも受けついでいきたいね！" 
+            }
+        };
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0, combo = 0, maxCombo = 0;
+
+        function shuffleArray(array) { const newArray = [...array]; for (let i = newArray.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [newArray[i], newArray[j]] = [newArray[j], newArray[i]]; } return newArray; }
+
+        function initGame() {
+            // ランダムに抽出
+            const s1 = shuffleArray(allQuestions.stage1).slice(0, 3);
+            const s2 = shuffleArray(allQuestions.stage2).slice(0, 4);
+            const s3 = shuffleArray(allQuestions.stage3).slice(0, 2);
+            
+            currentQuestions = [...s1, ...s2, ...s3, allQuestions.boss];
+            currentQuestionIndex = 0; score = 0; combo = 0; maxCombo = 0;
+
+            document.getElementById('result-area').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            document.getElementById('combo-display').textContent = "";
+            
+            updateProgress();
+            showQuestion();
+        }
+
+        function showQuestion() {
+            document.getElementById('explanation-area').style.display = 'none';
+            const qData = currentQuestions[currentQuestionIndex];
+            const choicesArea = document.getElementById('choices-area');
+            const stageInfo = document.getElementById('stage-info');
+            const missionLabel = document.getElementById('mission-label');
+            const graphArea = document.getElementById('graph-area');
+            
+            // グラフの表示制御とアニメーション
+            if(qData.useGraph) {
+                graphArea.style.display = 'block';
+                // バーのアニメーションをリセットして再実行
+                const fills = document.querySelectorAll('.bar-fill');
+                fills.forEach(fill => {
+                    fill.style.width = '0%';
+                    setTimeout(() => { fill.style.width = fill.getAttribute('data-width'); }, 100);
+                });
+            } else {
+                graphArea.style.display = 'none';
+            }
+
+            if(currentQuestionIndex < 3) { stageInfo.textContent = "🕰️ 調査1：昔のどうぐ"; missionLabel.textContent = "これは何に使うものだ？"; }
+            else if(currentQuestionIndex < 7) { stageInfo.textContent = "🏘️ 調査2：まちの景色"; missionLabel.textContent = "昔のまちをさぐれ！"; }
+            else if(currentQuestionIndex < 9) { stageInfo.textContent = "📈 調査3：人の数とくらし"; missionLabel.textContent = "データから読みとれ！"; }
+            else { stageInfo.textContent = "👑 最終調査：歴史から学ぶこと"; missionLabel.textContent = "隊長からの試練だ！"; }
+
+            document.getElementById('question-text').textContent = `Q${currentQuestionIndex + 1}. ${qData.q}`;
+            
+            choicesArea.innerHTML = '';
+            const shuffledChoices = shuffleArray(qData.c);
+
+            shuffledChoices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = choice;
+                btn.onclick = () => checkAnswer(choice, qData.a, qData.exp, btn);
+                choicesArea.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct, expText, btn) {
+            const buttons = document.querySelectorAll('.choice-btn');
+            buttons.forEach(b => b.disabled = true);
+
+            if (selected === correct) {
+                playSound('correct');
+                btn.style.backgroundColor = '#4a148c';
+                btn.style.color = '#fff';
+                btn.innerHTML = "⭕ 発見成功！<br>" + btn.textContent;
+                score++; combo++;
+                if(combo > maxCombo) maxCombo = combo;
+                if(combo > 1) document.getElementById('combo-display').textContent = `${combo} 連続正解中！✨`;
+            } else {
+                playSound('incorrect');
+                btn.style.backgroundColor = '#9e9e9e';
+                btn.style.color = '#fff';
+                btn.innerHTML = "❌ タイムパラドックス！<br>" + btn.textContent;
+                combo = 0; document.getElementById('combo-display').textContent = "";
+                buttons.forEach(b => {
+                    if(b.textContent === correct) {
+                        b.style.backgroundColor = '#4a148c';
+                        b.style.color = '#fff';
+                        b.innerHTML = "⭕ こっちが歴史の真実だ！<br>" + b.textContent;
+                    }
+                });
+            }
+            document.getElementById('explanation-text').textContent = expText;
+            document.getElementById('explanation-area').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            updateProgress();
+            if (currentQuestionIndex < currentQuestions.length) { showQuestion(); } else { showResult(); }
+        }
+
+        function updateProgress() {
+            const percentage = (currentQuestionIndex / 10) * 100;
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('player-icon').style.left = percentage + '%';
+        }
+
+        function showResult() {
+            playSound('clear');
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('result-area').style.display = 'block';
+            document.getElementById('score').textContent = score;
+            document.getElementById('max-combo').textContent = maxCombo;
+
+            let rank = "";
+            if (score === 10) rank = "👑 伝説のタイムパトロール隊長！";
+            else if (score >= 8) rank = "🚀 エリート・タイムトラベラー！";
+            else if (score >= 5) rank = "⏳ 一人前のパトロール隊員だ！";
+            else rank = "🐣 みならい隊員！もう一度タイムスリップだ！";
+            document.getElementById('rank-text').textContent = rank;
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
