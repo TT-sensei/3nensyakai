@@ -7,13 +7,13 @@
     <style>
         body {
             font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif;
-            background-color: #fdfae6; /* やさしいクリーム色 */
+            background-color: #fdfae6;
             color: #333;
             text-align: center;
             margin: 0;
             padding: 20px;
         }
-        h1 { color: #e65100; }
+        h1 { color: #e65100; margin-bottom: 5px; }
         .game-container {
             background-color: white;
             max-width: 600px;
@@ -21,9 +21,21 @@
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border: 4px solid #4caf50; /* 新鮮な野菜のような緑 */
+            border: 4px solid #4caf50;
         }
-        /* 探検ゲージ（お買い物ゲージ） */
+        
+        /* ステータスバー（コンボなど） */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .combo-text { color: #e91e63; font-size: 1.2em; animation: bounce 0.3s ease; }
+        @keyframes bounce { 0% {transform: scale(1);} 50% {transform: scale(1.2);} 100% {transform: scale(1);} }
+
+        /* 探検ゲージ */
         .progress-container {
             width: 100%;
             background-color: #ddd;
@@ -34,7 +46,7 @@
         }
         .progress-bar {
             height: 100%;
-            background-color: #ffb300; /* みかんのようなオレンジ */
+            background-color: #ffb300;
             border-radius: 10px;
             width: 0%;
             transition: width 0.5s ease;
@@ -47,12 +59,8 @@
             transition: left 0.5s ease;
             transform: translateX(-50%);
         }
-        .goal-icon {
-            position: absolute;
-            top: 0;
-            right: 5px;
-            font-size: 20px;
-        }
+        .goal-icon { position: absolute; top: 0; right: 5px; font-size: 20px; }
+        
         /* お客さんの声と問題 */
         .customer-voice {
             background-color: #fff3e0;
@@ -68,15 +76,10 @@
         .question-text {
             font-size: 1.1em;
             margin-bottom: 20px;
-            min-height: 2em;
-            line-height: 1.4;
+            font-weight: bold;
         }
         
-        .choices {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+        .choices { display: flex; flex-direction: column; gap: 10px; }
         .choice-btn {
             background-color: #e8f5e9; 
             border: 2px solid #81c784;
@@ -86,17 +89,47 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .choice-btn:hover {
-            background-color: #c8e6c9;
-            transform: translateY(-2px);
+        .choice-btn:hover { background-color: #c8e6c9; transform: translateY(-2px); }
+        .choice-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+
+        /* 解説エリア */
+        #explanation-area {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e3f2fd;
+            border: 2px dashed #64b5f6;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 1.1em;
+            color: #0d47a1;
         }
-        .choice-btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.7;
+        .next-btn {
+            margin-top: 15px;
+            padding: 15px 30px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 0 #1565c0;
         }
+        .next-btn:active { transform: translateY(4px); box-shadow: none; }
+
         /* 結果表示 */
         #result-area { display: none; }
         .result-title { font-size: 2em; color: #4caf50; margin-bottom: 10px; }
+        .reflection-box {
+            background-color: #fff9c4;
+            border: 2px solid #fbc02d;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
         .back-btn {
             display: inline-block;
             margin-top: 20px;
@@ -111,35 +144,49 @@
 </head>
 <body>
 
-    <h1>🛒 大にぎわい！スーパーづくりクエスト</h1>
-    <p>きみはお店の店長だ！お客さんの願いをかなえて、いいお店をつくろう！</p>
+    <h1>🛒 大にぎわい！スーパーづくり</h1>
+    <p style="margin-top:0;">お客さんの願いをかなえて、いいお店をつくろう！</p>
 
     <div class="game-container" id="game-area">
-        <div class="progress-container">
-            <div class="progress-bar" id="progress-bar"></div>
-            <div class="player-icon" id="player-icon">🛒</div> <div class="goal-icon">🏬</div>
+        <div class="status-bar">
+            <span id="stage-info" style="color: #666;"></span>
+            <span id="combo-display" class="combo-text"></span>
         </div>
 
-        <div id="stage-info" style="color: #666; font-weight: bold; margin-bottom: 10px;"></div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="player-icon" id="player-icon">🛒</div>
+            <div class="goal-icon">🏬</div>
+        </div>
         
         <div class="customer-voice" id="customer-voice">ロード中...</div>
         <div class="question-text" id="question-text"></div>
         
-        <div class="choices" id="choices-area">
-            </div>
+        <div class="choices" id="choices-area"></div>
+
+        <div id="explanation-area">
+            <div style="font-weight:bold; margin-bottom:5px;">💡 店長メモ（なぜかな？）</div>
+            <div id="explanation-text"></div>
+            <button class="next-btn" onclick="nextQuestion()">次の問題へすすむ ➡️</button>
+        </div>
     </div>
 
     <div class="game-container" id="result-area">
         <div class="result-title">本日のえいぎょう しゅうりょう！</div>
         <p style="font-size: 1.5em;">お客さんのえがお：<span id="score"></span> / 10</p>
-        <div id="rank-text" style="font-size: 1.3em; font-weight: bold; margin: 20px 0;"></div>
-        <button class="choice-btn" onclick="initGame()">もういちど お店をひらく</button>
-        <br>
-        <a href="index.html" class="back-btn">🏠 ポータルにもどる</a>
+        <p style="font-size: 1.2em; color: #e91e63; font-weight: bold;">最大連続正解：<span id="max-combo"></span> コンボ！</p>
+        <div id="rank-text" style="font-size: 1.3em; font-weight: bold; margin: 10px 0;"></div>
+        
+        <div class="reflection-box">
+            <h3 style="margin-top:0; color: #f57f17;">📝 ノートにふり返りを書こう！</h3>
+            <p>きみが一番<b>「なるほど！」「お客さんのためになるな！」</b>と思ったお店のくふうは何だったかな？<br>理由と一緒に、ノートにまとめてみよう。</p>
+        </div>
+
+        <button class="choice-btn" style="width:100%; margin-bottom:10px;" onclick="initGame()">もういちど お店をひらく</button>
+        <a href="index.html" class="back-btn" style="width:90%;">🏠 ポータルにもどる</a>
     </div>
 
     <script>
-        // --- 効果音 ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
 
@@ -159,7 +206,7 @@
         }
 
         function playSound(type) {
-            if (type === 'correct') { // レジの「チーン！」みたいな音
+            if (type === 'correct') { 
                 playTone(1200, 'sine', 0.1, 0.2);
                 setTimeout(() => playTone(1600, 'sine', 0.2, 0.2), 100);
             } else if (type === 'incorrect') {
@@ -173,37 +220,43 @@
             }
         }
 
-        // --- 問題データ ---
+        // --- 問題データ（解説付きに進化！） ---
         const allQuestions = {
-            // ステージ1：品物のえらびやすさ・来やすさ
             stage1: [
-                { v: "「あれ？マヨネーズはどこにあるの？」", q: "品物をえらびやすくするために、店長としてどうする？", c: ["どこに何があるか看板（かんばん）をつける", "お店を暗くする", "商品をぜんぶかくす", "店員さんを全員休ませる"], a: "どこに何があるか看板（かんばん）をつける" },
-                { v: "「車いすや、ベビーカーだとお店の中がせまくて通れないよ…」", q: "たくさんのお客さんが来やすくするために、どうする？", c: ["売り場の通路（つうろ）を広くする", "入り口を小さくする", "商品を床（ゆか）におく", "走らないと入れないようにする"], a: "売り場の通路（つうろ）を広くする" },
-                { v: "「パンを買ったから、バターもいっしょに買いたいな」", q: "買い物をしやすくするための、品物のならべ方のくふうは？", c: ["いっしょに食べる物を近くにおく", "お店のはじとはじにおく", "毎日おく場所をかえる", "パンだけしか売らない"], a: "いっしょに食べる物を近くにおく" },
-                { v: "「車でお店に行きたいんだけど、停める場所あるかな？」", q: "車で来るお客さんのために、どんな工夫をするといい？", c: ["広い駐車場（ちゅうしゃじょう）をつくる", "自転車しか入れなくする", "高速道路をつくる", "お店の屋根に停めてもらう"], a: "広い駐車場（ちゅうしゃじょう）をつくる" },
-                { v: "「お買い物のついでに、お金も引き出せたらいいな」", q: "スーパーの中にあると便利なものは、つぎのうちどれ？", c: ["ＡＴＭ（現金自動あずけ払い機）", "観覧車（かんらんしゃ）", "プール", "大きな工場"], a: "ＡＴＭ（現金自動あずけ払い機）" }
+                { v: "「あれ？マヨネーズはどこにあるの？」", q: "品物をえらびやすくするために、店長としてどうする？", c: ["どこに何があるか看板（かんばん）をつける", "お店を暗くする", "商品をぜんぶかくす"], a: "どこに何があるか看板（かんばん）をつける", exp: "「野菜コーナー」「調味料」などの看板（案内表示）があると、広い店内でも迷わずにお買い物ができるね！" },
+                { v: "「車いすや、ベビーカーだとお店の中がせまくて通れないよ…」", q: "たくさんのお客さんが来やすくするために、どうする？", c: ["売り場の通路（つうろ）を広くする", "入り口を小さくする", "商品を床（ゆか）におく"], a: "売り場の通路（つうろ）を広くする", exp: "通路が広いと、車いすやベビーカー、カートを押している人でも、ぶつからずに安心してお買い物ができるね。" },
+                { v: "「パンを買ったから、バターもいっしょに買いたいな」", q: "買い物をしやすくするための、品物のならべ方のくふうは？", c: ["いっしょに食べる物を近くにおく", "お店のはじとはじにおく", "毎日おく場所をかえる"], a: "いっしょに食べる物を近くにおく", exp: "関連する商品を近くに置く（関連販売）と、お客さんはあちこち歩き回らなくて済むから、とっても便利なんだ！" },
+                { v: "「車でお店に行きたいんだけど、停める場所あるかな？」", q: "車で来るお客さんのために、どんな工夫をするといい？", c: ["広い駐車場（ちゅうしゃじょう）をつくる", "自転車しか入れなくする", "お店の屋根に停めてもらう"], a: "広い駐車場（ちゅうしゃじょう）をつくる", exp: "たくさんお買い物をしても、車なら運びやすいね。スロープや広い駐車スペースもあるとさらに親切！" },
+                { v: "「お買い物のついでに、お金も引き出せたらいいな」", q: "スーパーの中にあると便利なものは、つぎのうちどれ？", c: ["ＡＴＭ（現金自動あずけ払い機）", "観覧車（かんらんしゃ）", "プール"], a: "ＡＴＭ（現金自動あずけ払い機）", exp: "スーパーの中に銀行のATMやクリーニング屋さんがあると、一度に用事が済ませられて大助かりだね。" }
             ],
-            // ステージ2：品物の産地と安全性
             stage2: [
-                { v: "「このりんご、どこで作られたものか知りたいな！」", q: "お客さんに産地（さんち）を教えるために、どうする？", c: ["ねふだに産地を大きく書く", "小さい字でこっそり書く", "外国産だとウソをつく", "お客さんにクイズを出す"], a: "ねふだに産地を大きく書く" },
-                { v: "「だれが作ったか、安全な野菜か知りたいな…」", q: "安全なものを買いたいお客さんのために、どうする？", c: ["作った人の名前や顔写真がわかるようにする", "ぜったいに教えない", "適当（てきとう）な名前を書いておく", "目かくしをして買ってもらう"], a: "作った人の名前や顔写真がわかるようにする" },
-                { v: "「この牛乳、いつまでおいしく飲めるのかな？」", q: "お客さんが安心できるように、牛乳パックには何が書いてある？", c: ["賞味期限（しょうみきげん）", "店長のたんじょう日", "あしたの天気", "牛の名前"], a: "賞味期限（しょうみきげん）" },
-                { v: "「遠くの北海道でとれたじゃがいもは、どうやってお店に来るの？」", q: "品物を遠くから運ぶために使われるものは？", c: ["トラックや船", "歩いて運ぶ", "ハトが運んでくる", "地下のトンネルを転がす"], a: "トラックや船" },
-                { v: "「レジでお金をはらうのに、あまり待ちたくないな！」", q: "レジの店員さんが気をつけていることは？", c: ["お客さんをまたせないよう、はやく正確（せいかく）に計算する", "ゆっくりおしゃべりしながら計算する", "計算しないでタダにする", "お客さんに計算してもらう"], a: "お客さんをまたせないよう、はやく正確（せいかく）に計算する" }
+                { v: "「このりんご、どこで作られたものか知りたいな！」", q: "お客さんに産地（さんち）を教えるために、どうする？", c: ["ねふだに産地を大きく書く", "小さい字でこっそり書く", "外国産だとウソをつく"], a: "ねふだに産地を大きく書く", exp: "どこでとれたか（産地）がわかると、お客さんは「新鮮だな」「あの県のものだ」と安心して選ぶことができるね。" },
+                { v: "「だれが作ったか、安全な野菜か知りたいな…」", q: "安全なものを買いたいお客さんのために、どうする？", c: ["作った人の名前や顔写真がわかるようにする", "ぜったいに教えない", "適当（てきとう）な名前を書いておく"], a: "作った人の名前や顔写真がわかるようにする", exp: "作った人の顔が見えると、「この人が大切に育てたんだな」と、安全への信頼がグッと高まるんだよ。" },
+                { v: "「この牛乳、いつまでおいしく飲めるのかな？」", q: "お客さんが安心できるように、牛乳パックには何が書いてある？", c: ["賞味期限（しょうみきげん）", "店長のたんじょう日", "あしたの天気"], a: "賞味期限（しょうみきげん）", exp: "おいしく安全に食べられる期限（賞味期限や消費期限）を守って、お店はつねに新鮮なものを並べているんだね。" },
+                { v: "「遠くの北海道でとれたじゃがいもは、どうやってお店に来るの？」", q: "品物を遠くから運ぶために使われるものは？", c: ["トラックや船", "歩いて運ぶ", "地下のトンネルを転がす"], a: "トラックや船", exp: "日本中、世界中から、新鮮さを保ったままトラックや船、飛行機などで毎日お店に運ばれてくるんだよ。" },
+                { v: "「レジでお金をはらうのに、あまり待ちたくないな！」", q: "レジの店員さんが気をつけていることは？", c: ["お客さんをまたせないよう、はやく正確に計算する", "ゆっくりおしゃべりしながら計算する", "お客さんに計算してもらう"], a: "お客さんをまたせないよう、はやく正確に計算する", exp: "バーコードをピッ！と読み取るシステムや、自分ではらう「セルフレジ」を使って、スピーディーに会計しているよ。" }
             ],
-            // ステージ3：リサイクルと色んなお店
             stage3: [
-                { v: "「飲み終わった牛乳パックや、お肉のトレイをごみにしたくないな」", q: "お店でできる、ごみをへらす工夫はどれ？", c: ["リサイクルボックスをおく", "お店の裏（うら）にうめる", "川にすてる", "お客さんの家に送り返す"], a: "リサイクルボックスをおく" },
-                { v: "「自然をまもるために、環境（かんきょう）にいい品物を買いたいな」", q: "リサイクルされた材料を多く使っている品物についているマークは？", c: ["エコマーク", "初心者（しょしんしゃ）マーク", "地図記号", "交通標識（ひょうしき）"], a: "エコマーク" },
-                { v: "「夜おそくになっちゃった！あした使うノートを買いたいな」", q: "長い時間あいている、便利なお店はどれ？", c: ["コンビニエンスストア", "商店街（しょうてんがい）", "移動（いどう）はんばい車", "工場"], a: "コンビニエンスストア" },
-                { v: "「おばあちゃん、足が悪くて遠くのスーパーまで行けないの…」", q: "お店まで来られない人のために、どんな工夫がある？", c: ["移動（いどう）はんばい車やインターネットの買い物", "がんばって歩くように言う", "買い物をあきらめさせる", "お店ごと引っ越す"], a: "移動（いどう）はんばい車やインターネットの買い物" },
-                { v: "「お店に品物がたりなくならないようにしてほしいな」", q: "お店の裏側（じむ室）で、店員さんがしている仕事は？", c: ["コンピューターで品物を注文（ちゅうもん）する", "一日中ゲームをしている", "品物をかくす", "寝ている"], a: "コンピューターで品物を注文（ちゅうもん）する" }
-            ]
+                { v: "「飲み終わった牛乳パックや、お肉のトレイをごみにしたくないな」", q: "お店でできる、ごみをへらす工夫はどれ？", c: ["リサイクルボックスをおく", "お店の裏（うら）にうめる", "川にすてる"], a: "リサイクルボックスをおく", exp: "牛乳パックやトレイを回収して、また新しい資源（しげん）として生まれ変わらせるリサイクルの取り組みだね。" },
+                { v: "「自然をまもるために、環境（かんきょう）にいい品物を買いたいな」", q: "環境にやさしい品物についているマークは？", c: ["エコマーク", "初心者（しょしんしゃ）マーク", "地図記号"], a: "エコマーク", exp: "「環境を大切にしている商品」の目印だよ。お店でもレジ袋をへらすためにエコバッグをすすめているね。" },
+                { v: "「おばあちゃん、足が悪くて遠くのスーパーまで行けないの…」", q: "お店まで来られない人のために、どんな工夫がある？", c: ["移動（いどう）はんばい車やインターネットの買い物", "がんばって歩くように言う", "買い物をあきらめさせる"], a: "移動（いどう）はんばい車やインターネットの買い物", exp: "お年寄りや、お店が遠い人の家の近くまで、トラックに商品をのせて売りに行く「移動スーパー」が増えているよ。" },
+                { v: "「お店に品物がたりなくならないようにしてほしいな」", q: "お店の裏側（じむ室）で、店員さんがしている仕事は？", c: ["コンピューターで品物を注文（ちゅうもん）する", "一日中ゲームをしている", "品物をかくす"], a: "コンピューターで品物を注文（ちゅうもん）する", exp: "お客さんがほしい時に売り切れないよう、データを見て計画的に品物を注文（仕入れ）しているんだ。" }
+            ],
+            // ★ボス問題：総合的な判断を問う固定問題
+            boss: { 
+                v: "「これからも、ずっとこのお店でお買い物をしたいな！」", 
+                q: "いよいよきみのスーパーがオープン！これからもたくさんのお客さんに来てもらうために、一番大切にしたいことは？", 
+                c: ["お客さんの願いを考えて、買い物がしやすい工夫を続ける", "自分だけがもうかるように、値段をすごく高くする", "商品を適当にならべて、店員は一日中おやすみする"], 
+                a: "お客さんの願いを考えて、買い物がしやすい工夫を続ける", 
+                exp: "素晴らしい！どんな時も「お客さんの目線に立って」願いに応え続けることが、地域で愛されるスーパーのひみつなんだね！" 
+            }
         };
 
         let currentQuestions = [];
         let currentQuestionIndex = 0;
         let score = 0;
+        let combo = 0;
+        let maxCombo = 0;
 
         function shuffleArray(array) {
             const newArray = [...array];
@@ -215,40 +268,39 @@
         }
 
         function initGame() {
-            // 各ステージからランダムに問題を抽出
             const s1 = shuffleArray(allQuestions.stage1).slice(0, 3);
             const s2 = shuffleArray(allQuestions.stage2).slice(0, 3);
             const s3 = shuffleArray(allQuestions.stage3).slice(0, 3);
             
-            const remainings = [...allQuestions.stage1, ...allQuestions.stage2, ...allQuestions.stage3]
-                .filter(q => !s1.includes(q) && !s2.includes(q) && !s3.includes(q));
-            const boss = shuffleArray(remainings).slice(0, 1);
-
-            currentQuestions = [...s1, ...s2, ...s3, ...boss];
+            // 最後の1問は固定のボス問題
+            currentQuestions = [...s1, ...s2, ...s3, allQuestions.boss];
+            
             currentQuestionIndex = 0;
             score = 0;
+            combo = 0;
+            maxCombo = 0;
 
             document.getElementById('result-area').style.display = 'none';
             document.getElementById('game-area').style.display = 'block';
+            document.getElementById('combo-display').textContent = "";
             
             updateProgress();
             showQuestion();
         }
 
         function showQuestion() {
+            document.getElementById('explanation-area').style.display = 'none';
             const qData = currentQuestions[currentQuestionIndex];
             const choicesArea = document.getElementById('choices-area');
             const stageInfo = document.getElementById('stage-info');
-            const customerVoice = document.getElementById('customer-voice');
-            const questionText = document.getElementById('question-text');
             
-            if(currentQuestionIndex < 3) stageInfo.textContent = "🏢 ステージ1：買い物がしやすいお店づくり";
-            else if(currentQuestionIndex < 6) stageInfo.textContent = "🍎 ステージ2：品物のひみつと安心";
-            else if(currentQuestionIndex < 9) stageInfo.textContent = "♻️ ステージ3：リサイクルと色々なお店";
-            else stageInfo.textContent = "👑 さいごの試練：スーパーマスターへの道！";
+            if(currentQuestionIndex < 3) stageInfo.textContent = "🏢 ステージ1：買いやすさの工夫";
+            else if(currentQuestionIndex < 6) stageInfo.textContent = "🍎 ステージ2：産地と安全";
+            else if(currentQuestionIndex < 9) stageInfo.textContent = "♻️ ステージ3：色々なお店";
+            else stageInfo.textContent = "👑 さいごの試練：店長のねがい";
 
-            customerVoice.innerHTML = `🗣️ お客さんの声：<br>「${qData.v}」`;
-            questionText.textContent = `第 ${currentQuestionIndex + 1} 問： ${qData.q}`;
+            document.getElementById('customer-voice').innerHTML = `🗣️ お客さんの声：<br>「${qData.v}」`;
+            document.getElementById('question-text').textContent = `第 ${currentQuestionIndex + 1} 問： ${qData.q}`;
             
             choicesArea.innerHTML = '';
             const shuffledChoices = shuffleArray(qData.c);
@@ -257,41 +309,50 @@
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
                 btn.textContent = choice;
-                btn.onclick = () => checkAnswer(choice, qData.a, btn);
+                btn.onclick = () => checkAnswer(choice, qData.a, qData.exp, btn);
                 choicesArea.appendChild(btn);
             });
         }
 
-        function checkAnswer(selected, correct, btn) {
+        function checkAnswer(selected, correct, expText, btn) {
             const buttons = document.querySelectorAll('.choice-btn');
             buttons.forEach(b => b.disabled = true);
 
             if (selected === correct) {
                 playSound('correct');
-                btn.style.backgroundColor = '#ffcc80'; // オレンジ色に光る
-                btn.textContent = "✨ 喜ばれました！ " + btn.textContent;
+                btn.style.backgroundColor = '#ffcc80';
+                btn.innerHTML = "✨ 喜ばれました！<br>" + btn.textContent;
                 score++;
+                combo++;
+                if(combo > maxCombo) maxCombo = combo;
+                if(combo > 1) document.getElementById('combo-display').textContent = `${combo} 連続正解中！🔥`;
             } else {
                 playSound('incorrect');
                 btn.style.backgroundColor = '#e57373';
-                btn.textContent = "💦 ちょっとちがうかも… " + btn.textContent;
+                btn.innerHTML = "💦 ちょっとちがうかも…<br>" + btn.textContent;
+                combo = 0;
+                document.getElementById('combo-display').textContent = "";
                 buttons.forEach(b => {
                     if(b.textContent === correct) {
                         b.style.backgroundColor = '#ffcc80';
-                        b.textContent = "✨ これが正解！ " + b.textContent;
+                        b.innerHTML = "✨ こっちが正解！<br>" + b.textContent;
                     }
                 });
             }
 
-            setTimeout(() => {
-                currentQuestionIndex++;
-                updateProgress();
-                if (currentQuestionIndex < currentQuestions.length) {
-                    showQuestion();
-                } else {
-                    showResult();
-                }
-            }, 1800);
+            // 解説を表示して、次へ進むボタンを出す
+            document.getElementById('explanation-text').textContent = expText;
+            document.getElementById('explanation-area').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            updateProgress();
+            if (currentQuestionIndex < currentQuestions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
         }
 
         function updateProgress() {
@@ -302,15 +363,15 @@
 
         function showResult() {
             playSound('clear');
-
             document.getElementById('game-area').style.display = 'none';
             document.getElementById('result-area').style.display = 'block';
             document.getElementById('score').textContent = score;
+            document.getElementById('max-combo').textContent = maxCombo;
 
             let rank = "";
             if (score === 10) rank = "👑 カリスマ店長！毎日大行列だ！";
-            else if (score >= 8) rank = "🎖️ ベテラン店長！みんなのひーろーだ！";
-            else if (score >= 5) rank = "🛒 一人前店員！もっとお客さんを笑顔にしよう！";
+            else if (score >= 8) rank = "🎖️ ベテラン店長！みんなのひーろー！";
+            else if (score >= 5) rank = "🛒 一人前店長！もっとお客さんを笑顔にしよう！";
             else rank = "🐣 見習い店員！これからお店づくりを学ぼう！";
 
             document.getElementById('rank-text').textContent = rank;
