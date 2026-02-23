@@ -3,145 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>① わたしたちの まち - たんけんクエスト</title>
+    <title>① わたしたちのまち - たんけんクエスト</title>
     <style>
-        body {
-            font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif;
-            background-color: #e8f5e9;
-            color: #333;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 { color: #2e7d32; }
-        .game-container {
-            background-color: white;
-            max-width: 600px;
-            margin: 0 auto;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border: 4px solid #4caf50;
-        }
-        /* 探検ゲージ */
-        .progress-container {
-            width: 100%;
-            background-color: #ddd;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            height: 30px;
-            position: relative;
-        }
-        .progress-bar {
-            height: 100%;
-            background-color: #4caf50;
-            border-radius: 10px;
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-        .player-icon {
-            position: absolute;
-            top: -10px;
-            left: 0%;
-            font-size: 30px;
-            transition: left 0.5s ease;
-            transform: translateX(-50%);
-        }
-        .goal-icon {
-            position: absolute;
-            top: 0;
-            right: 5px;
-            font-size: 20px;
-        }
-        /* 問題と選択肢 */
-        .question-text {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-bottom: 10px;
-            min-height: 2em;
-        }
-        /* 地図記号を表示するエリア */
-        .question-image {
-            margin: 0 auto 20px auto;
-            height: 100px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .question-image svg {
-            /* 少し影をつけて見やすく */
-            filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.1));
-        }
+        body { font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif; background-color: #f0f8ff; color: #333; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #2e8b57; margin-bottom: 5px; }
+        .game-container { background-color: white; max-width: 600px; margin: 0 auto; border-radius: 15px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 4px solid #3cb371; }
         
-        .choices {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .choice-btn {
-            background-color: #f1f8e9;
-            border: 2px solid #8bc34a;
-            border-radius: 10px;
-            padding: 15px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .choice-btn:hover {
-            background-color: #c5e1a5;
-            transform: translateY(-2px);
-        }
-        .choice-btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        /* 結果表示 */
+        .status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; }
+        .combo-text { color: #e91e63; font-size: 1.2em; animation: bounce 0.3s ease; }
+        @keyframes bounce { 0% {transform: scale(1);} 50% {transform: scale(1.2);} 100% {transform: scale(1);} }
+
+        .progress-container { width: 100%; background-color: #ddd; border-radius: 10px; margin-bottom: 20px; height: 30px; position: relative; }
+        .progress-bar { height: 100%; background-color: #3cb371; border-radius: 10px; width: 0%; transition: width 0.5s ease; }
+        .player-icon { position: absolute; top: -10px; left: 0%; font-size: 30px; transition: left 0.5s ease; transform: translateX(-50%); }
+        .goal-icon { position: absolute; top: 0; right: 5px; font-size: 20px; }
+        
+        .question-text { font-size: 1.3em; margin-bottom: 20px; font-weight: bold; min-height: 2em; line-height: 1.4; }
+        .question-image { max-width: 100%; height: auto; max-height: 150px; margin-bottom: 20px; border: 2px solid #ddd; border-radius: 10px; display: none; }
+        
+        .choices { display: flex; flex-direction: column; gap: 10px; }
+        .choice-btn { background-color: #e8f5e9; border: 2px solid #81c784; border-radius: 10px; padding: 15px; font-size: 1.1em; cursor: pointer; transition: all 0.2s; }
+        .choice-btn:hover { background-color: #c8e6c9; transform: translateY(-2px); }
+        .choice-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+
+        #explanation-area { display: none; margin-top: 20px; padding: 15px; background-color: #e8f5e9; border: 2px dashed #4caf50; border-radius: 10px; text-align: left; font-size: 1.1em; color: #1b5e20; }
+        .next-btn { margin-top: 15px; padding: 15px 30px; background-color: #4caf50; color: white; border: none; border-radius: 30px; font-size: 1.2em; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 0 #2e7d32; }
+        .next-btn:active { transform: translateY(4px); box-shadow: none; }
+
         #result-area { display: none; }
         .result-title { font-size: 2em; color: #ff9800; margin-bottom: 10px; }
-        .back-btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #ff9800;
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: bold;
-        }
+        .reflection-box { background-color: #fff9c4; border: 2px solid #fbc02d; border-radius: 10px; padding: 15px; margin: 20px 0; text-align: left; }
+        .back-btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #ff9800; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>🗺️ まちたんけん クエスト！</h1>
-    <p>クイズにこたえて、まちのひみつをはっけんしよう！</p>
+    <h1>🗺️ わたしたちのまち クエスト！</h1>
+    <p style="margin-top:0;">地図記号や方位をおぼえて、まちのひみつを見つけよう！</p>
 
     <div class="game-container" id="game-area">
+        <div class="status-bar">
+            <span id="stage-info" style="color: #666;"></span>
+            <span id="combo-display" class="combo-text"></span>
+        </div>
+
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar"></div>
             <div class="player-icon" id="player-icon">🚶</div>
-            <div class="goal-icon">🚩</div>
+            <div class="goal-icon">🏫</div>
         </div>
 
-        <div id="stage-info" style="color: #666; font-weight: bold; margin-bottom: 10px;"></div>
         <div class="question-text" id="question-text">ロード中...</div>
+        <img id="question-image" class="question-image" src="" alt="問題の画像">
         
-        <div class="question-image" id="question-image"></div>
-        
-        <div class="choices" id="choices-area">
-            </div>
+        <div class="choices" id="choices-area"></div>
+
+        <div id="explanation-area">
+            <div style="font-weight:bold; margin-bottom:5px;">💡 はっけんメモ（なぜかな？）</div>
+            <div id="explanation-text"></div>
+            <button class="next-btn" onclick="nextQuestion()">次のたんけんへ ➡️</button>
+        </div>
     </div>
 
     <div class="game-container" id="result-area">
         <div class="result-title">たんけん しゅうりょう！</div>
-        <p style="font-size: 1.5em;">せいかい：<span id="score"></span> / 10問</p>
-        <div id="rank-text" style="font-size: 1.3em; font-weight: bold; margin: 20px 0;"></div>
-        <button class="choice-btn" onclick="initGame()">もういちど たんけんする</button>
-        <br>
-        <a href="index.html" class="back-btn">🏠 ポータルにもどる</a>
+        <p style="font-size: 1.5em;">せいかい：<span id="score"></span> / 10</p>
+        <p style="font-size: 1.2em; color: #e91e63; font-weight: bold;">最大連続正解：<span id="max-combo"></span> コンボ！</p>
+        <div id="rank-text" style="font-size: 1.3em; font-weight: bold; margin: 10px 0;"></div>
+        
+        <div class="reflection-box">
+            <h3 style="margin-top:0; color: #f57f17;">📝 ノートにふり返りを書こう！</h3>
+            <p>きみが一番<b>「おもしろい！」「なるほど！」</b>と思った地図記号や、まちのひみつは何だったかな？<br>理由と一緒に、ノートにまとめてみよう。</p>
+        </div>
+
+        <button class="choice-btn" style="width:100%; margin-bottom:10px;" onclick="initGame()">もういちど たんけんする</button>
+        <a href="index.html" class="back-btn" style="width:90%;">🏠 ポータルにもどる</a>
     </div>
 
     <script>
-        // --- 効果音のしくみ (Web Audio API) ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
 
@@ -159,127 +98,73 @@
             oscillator.start();
             oscillator.stop(audioCtx.currentTime + duration);
         }
-
         function playSound(type) {
-            if (type === 'correct') {
-                playTone(523.25, 'sine', 0.1); // ド
-                setTimeout(() => playTone(659.25, 'sine', 0.2), 100); // ミ
-            } else if (type === 'incorrect') {
-                playTone(250, 'sawtooth', 0.2, 0.2); // 低いブー
-                setTimeout(() => playTone(200, 'sawtooth', 0.3, 0.2), 150);
-            } else if (type === 'clear') {
-                playTone(523.25, 'square', 0.15); // ド
-                setTimeout(() => playTone(523.25, 'square', 0.15), 150);
-                setTimeout(() => playTone(523.25, 'square', 0.15), 300);
-                setTimeout(() => playTone(783.99, 'square', 0.4), 450);  // ソ
-            }
+            if (type === 'correct') { playTone(523.25, 'sine', 0.1); setTimeout(() => playTone(659.25, 'sine', 0.2), 100); }
+            else if (type === 'incorrect') { playTone(250, 'sawtooth', 0.2, 0.2); setTimeout(() => playTone(200, 'sawtooth', 0.3, 0.2), 150); }
+            else if (type === 'clear') { playTone(523.25, 'square', 0.15); setTimeout(() => playTone(523.25, 'square', 0.15), 150); setTimeout(() => playTone(523.25, 'square', 0.15), 300); setTimeout(() => playTone(783.99, 'square', 0.4), 450); }
         }
-        // ------------------------------------
-
-        // ★自信を持って表示できる単純な記号のみ厳選（SVGデータ）
-        const symbols = {
-            school: `<svg width="80" height="80" viewBox="0 0 100 100"><text x="50" y="82" font-size="80" text-anchor="middle" font-family="serif" font-weight="bold">文</text></svg>`,
-            post: `<svg width="80" height="80" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" stroke="black" stroke-width="6" fill="none"/><text x="50" y="75" font-size="70" text-anchor="middle" font-family="sans-serif" font-weight="bold">〒</text></svg>`,
-            koban: `<svg width="80" height="80" viewBox="0 0 100 100"><line x1="20" y1="20" x2="80" y2="80" stroke="black" stroke-width="14"/><line x1="20" y1="80" x2="80" y2="20" stroke="black" stroke-width="14"/></svg>`,
-            temple: `<svg width="80" height="80" viewBox="0 0 100 100"><text x="50" y="80" font-size="80" text-anchor="middle" font-family="sans-serif">卍</text></svg>`,
-            library: `<svg width="80" height="80" viewBox="0 0 100 100"><path d="M 15 80 L 50 90 L 85 80 L 85 20 L 50 30 L 15 20 Z" fill="none" stroke="black" stroke-width="8" stroke-linejoin="round"/><line x1="50" y1="30" x2="50" y2="90" stroke="black" stroke-width="8"/></svg>`,
-            cityhall: `<svg width="80" height="80" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="black" stroke-width="10" fill="none"/><circle cx="50" cy="50" r="18" fill="black"/></svg>`
-        };
 
         const allQuestions = {
             stage1: [
-                { q: "方位（ほうい）を調べるための道具はどれ？", img: "", c: ["方位じしん", "温度計", "虫めがね", "時計"], a: "方位じしん" },
-                { q: "方位じしんの色がついた針は、ふつうどの方位をさす？", img: "", c: ["北", "南", "東", "西"], a: "北" },
-                { q: "方位は「東・西・南・〇」あと一つは？", img: "", c: ["北", "右", "上", "前"], a: "北" },
-                { q: "地図はふつう、どの方位が「上」になるようにかかれている？", img: "", c: ["北", "南", "東", "西"], a: "北" },
-                { q: "北が「上」じゃない地図には、何がかかれている？", img: "", c: ["方位をさめすしるし", "地図記号", "温度", "住所"], a: "方位をさめすしるし" },
-                { q: "まちたんけんで調べたことを、絵や図であらわしたものを何という？", img: "", c: ["絵地図", "写真", "ポスター", "カレンダー"], a: "絵地図" },
-                { q: "絵地図をかくとき、わかりやすくするための工夫はどれ？", img: "", c: ["色分けしてまとめる", "全部同じ色でかく", "文字だけでかく", "見なかったことにする"], a: "色分けしてまとめる" },
-                { q: "絵地図で、どんな場所かわかるように決めるものはどれ？", img: "", c: ["記号やしるし", "ねだん", "人の名前", "色だけのルール"], a: "記号やしるし" },
-                { q: "太陽がのぼる方角はどれかな？", img: "", c: ["東", "西", "南", "北"], a: "東" },
-                { q: "太陽がしずむ方角はどれかな？", img: "", c: ["西", "東", "南", "北"], a: "西" }
+                { q: "太陽がのぼる方角は、どこですか？", c: ["東（ひがし）", "西（にし）", "南（みなみ）", "北（きた）"], a: "東（ひがし）", exp: "朝、太陽は東からのぼって、夕方に西へしずむんだね。これを覚えておくと方位がわかるよ！" },
+                { q: "地図をみるとき、ふつうは「上」がどの方角になるように作られていますか？", c: ["北（きた）", "南（みなみ）", "東（ひがし）", "西（にし）"], a: "北（きた）", exp: "地図はいつも「北」が上になるように作られているよ。方位記号の「４」みたいなマークも上を指しているね。" },
+                { q: "まちの様子を調べるとき、高いところから見るとどうなりますか？", c: ["遠くまでよく見える", "何も見えなくなる", "声がよく聞こえる"], a: "遠くまでよく見える", exp: "高いところから見ると、まち全体の広がりや、どこに何があるかが一目でわかるね！" }
             ],
-            // ★ステージ2：厳選した画像問題と、知識問題の組み合わせに変更
             stage2: [
-                { q: "この地図記号はなにをあらわしているかな？", img: symbols.school, c: ["学校", "交番", "図書館", "市役所"], a: "学校" },
-                { q: "この地図記号はなにをあらわしているかな？", img: symbols.post, c: ["郵便局", "警察署", "病院", "工場"], a: "郵便局" },
-                { q: "この地図記号はなにをあらわしているかな？", img: symbols.koban, c: ["交番", "学校", "畑", "橋"], a: "交番" },
-                { q: "この地図記号はなにをあらわしているかな？", img: symbols.temple, c: ["寺", "神社", "病院", "市役所"], a: "寺" },
-                { q: "この地図記号はなにをあらわしているかな？", img: symbols.library, c: ["図書館", "学校", "本屋", "博物館"], a: "図書館" },
-                { q: "この地図記号はなにをあらわしているかな？", img: symbols.cityhall, c: ["市役所", "警察署", "郵便局", "病院"], a: "市役所" },
-                { q: "地図記号は何のために決まっているの？", img: "", c: ["地図をわかりやすくするため", "地図をかっこよくするため", "暗号ごっこをするため", "特にいみはない"], a: "地図をわかりやすくするため" },
-                { q: "消防署（しょうぼうしょ）の地図記号のもとになった道具はなに？", img: "", c: ["さすまた", "ホース", "はしご車", "ヘルメット"], a: "さすまた" },
-                { q: "警察署（けいさつしょ）の地図記号のもとになった道具はなに？", img: "", c: ["警棒（けいぼう）", "手錠（てじょう）", "パトカー", "ピストル"], a: "警棒（けいぼう）" },
-                { q: "病院などの地図記号を決めている国の役所はどこ？", img: "", c: ["国土地理院", "文部科学省", "宮内庁", "気象庁"], a: "国土地理院" }
+                { q: "「文」という形の地図記号は、何を表していますか？", c: ["学校", "図書館", "交番"], a: "学校", exp: "昔、学校で字（文）を習ったことから「文」という形になったんだよ。" },
+                { q: "「交番（こうばん）」を表す地図記号は、どんな形ですか？", c: ["✕（ばつ）の形", "＋（プラス）の形", "〒の形"], a: "✕（ばつ）の形", exp: "交番でおまわりさんが持っている警棒（けいぼう）を交差させた形からきているんだ。" },
+                { q: "消防署（しょうぼうしょ）を表す地図記号は、何の形からできていますか？", c: ["さすまた（昔の道具）の形", "ホースの形", "消防車の形"], a: "さすまた（昔の道具）の形", exp: "昔、火事のときに家をこわして火を消すために使っていた「さすまた」という道具の形だよ。" },
+                { q: "市役所や区役所を表す地図記号はどれですか？", c: ["◎（二重丸）", "〒の形", "十（漢字のじゅう）"], a: "◎（二重丸）", exp: "まちの中心になる大切な場所だから、◎（二重丸）で地図の中でも目立つようになっているんだ。" },
+                { q: "「〒」の形の地図記号は、何を表していますか？", c: ["郵便局（ゆうびんきょく）", "病院", "神社"], a: "郵便局（ゆうびんきょく）", exp: "郵便をあつかっていた「ていしんしょう（逓信省）」という昔の役所の「テ」というカタカナからきているよ。" },
+                { q: "「十」の形の地図記号は、何を表していますか？", c: ["病院", "お寺", "交番"], a: "病院", exp: "病院や救急箱、救急車などでよく見る「十字」の形からきているよ。" }
             ],
             stage3: [
-                { q: "みんなのためにつくられた施設を何という？", img: "", c: ["公共しせつ", "お店", "工場", "遊園地"], a: "公共しせつ" },
-                { q: "次の中で「公共しせつ」はどれ？", img: "", c: ["図書館", "スーパー", "ケーキ屋", "くつ屋"], a: "図書館" },
-                { q: "まちたんけんで、気づいたことをのこすために使うものは？", img: "", c: ["メモやカード", "お金", "おもちゃ", "おかし"], a: "メモやカード" },
-                { q: "メモには、文字のほかに何をかくとわかりやすい？", img: "", c: ["絵や写真", "音楽", "におい", "味"], a: "絵や写真" },
-                { q: "古い建物が多いのはどんなところ？", img: "", c: ["寺や神社", "スーパー", "コンビニ", "新しいマンション"], a: "寺や神社" },
-                { q: "次の中で「公共しせつ」ではないものはどれ？", img: "", c: ["スーパーマーケット", "公民館", "消防署", "警察署"], a: "スーパーマーケット" },
-                { q: "病院はどんな場所？", img: "", c: ["病気やケガをなおすところ", "本を借りるところ", "お金をあずけるところ", "買い物するところ"], a: "病気やケガをなおすところ" },
-                { q: "警察署や交番の人は何をしてくれる？", img: ["まちの安全を守る", "火事を消す", "手紙を届ける", "パンを焼く"], a: "まちの安全を守る" },
-                { q: "消防署の人は何をしてくれる？", img: "", c: ["火事を消す", "どろぼうをつかまえる", "本を貸す", "病気をなおす"], a: "火事を消す" },
-                { q: "本がたくさんおいてあり、だれでも借りられる場所は？", img: "", c: ["図書館", "公民館", "市役所", "博物館"], a: "図書館" }
-            ]
+                { q: "まちの様子を地図にまとめるとき、便利なものは何ですか？", c: ["地図記号", "温度計", "ストップウォッチ"], a: "地図記号", exp: "文字で「がっこう」と書くよりも、記号を使ったほうが地図がすっきりして見やすくなるね！" },
+                { q: "地図の中で、田んぼや畑が多いところには、どんなものがよくありますか？", c: ["ため池や用水路", "大きなビル", "たくさんの電車"], a: "ため池や用水路", exp: "作物（お米や野菜）を育てるためには、たくさんのお水が必要だからだね。" }
+            ],
+            boss: { 
+                q: "みんなにわかりやすい「まちの地図」を作るとき、いちばん大切なことは何かな？", 
+                c: ["方位や地図記号を使って、だれが見ても正しくわかるようにかく", "自分の好きな絵だけを、好きなようにかく", "字をできるだけ小さくかいて、たくさん詰めこむ"], 
+                a: "方位や地図記号を使って、だれが見ても正しくわかるようにかく", 
+                exp: "すばらしい！地図は自分だけじゃなく、他の人が見ても「まちの様子」が正しく伝わることが一番大切なんだね！" 
+            }
         };
 
         let currentQuestions = [];
         let currentQuestionIndex = 0;
-        let score = 0;
+        let score = 0, combo = 0, maxCombo = 0;
 
-        function shuffleArray(array) {
-            const newArray = [...array];
-            for (let i = newArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-            }
-            return newArray;
-        }
+        function shuffleArray(array) { const newArray = [...array]; for (let i = newArray.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [newArray[i], newArray[j]] = [newArray[j], newArray[i]]; } return newArray; }
 
         function initGame() {
             const s1 = shuffleArray(allQuestions.stage1).slice(0, 3);
-            const s2 = shuffleArray(allQuestions.stage2).slice(0, 3);
-            const s3 = shuffleArray(allQuestions.stage3).slice(0, 3);
+            const s2 = shuffleArray(allQuestions.stage2).slice(0, 4);
+            const s3 = shuffleArray(allQuestions.stage3).slice(0, 2);
             
-            const remainings = [...allQuestions.stage1, ...allQuestions.stage2, ...allQuestions.stage3]
-                .filter(q => !s1.includes(q) && !s2.includes(q) && !s3.includes(q));
-            const boss = shuffleArray(remainings).slice(0, 1);
-
-            currentQuestions = [...s1, ...s2, ...s3, ...boss];
-            currentQuestionIndex = 0;
-            score = 0;
+            currentQuestions = [...s1, ...s2, ...s3, allQuestions.boss];
+            currentQuestionIndex = 0; score = 0; combo = 0; maxCombo = 0;
 
             document.getElementById('result-area').style.display = 'none';
             document.getElementById('game-area').style.display = 'block';
+            document.getElementById('combo-display').textContent = "";
             
             updateProgress();
             showQuestion();
         }
 
         function showQuestion() {
+            document.getElementById('explanation-area').style.display = 'none';
             const qData = currentQuestions[currentQuestionIndex];
             const choicesArea = document.getElementById('choices-area');
             const stageInfo = document.getElementById('stage-info');
-            const questionImage = document.getElementById('question-image');
             
-            if(currentQuestionIndex < 3) stageInfo.textContent = "🗺️ ステージ1：方位と地図のきまり";
-            else if(currentQuestionIndex < 6) stageInfo.textContent = "🔍 ステージ2：地図記号のなぞ";
-            else if(currentQuestionIndex < 9) stageInfo.textContent = "🏫 ステージ3：まちの施設";
-            else stageInfo.textContent = "👹 さいごの試練：まちのひみつボス！";
+            if(currentQuestionIndex < 3) stageInfo.textContent = "🧭 ステージ1：方位のひみつ";
+            else if(currentQuestionIndex < 7) stageInfo.textContent = "🗺️ ステージ2：地図記号のひみつ";
+            else if(currentQuestionIndex < 9) stageInfo.textContent = "🏡 ステージ3：まちの様子";
+            else stageInfo.textContent = "👑 さいごの試練：たんけん隊長へ";
 
             document.getElementById('question-text').textContent = `第 ${currentQuestionIndex + 1} 問： ${qData.q}`;
             
-            if(qData.img) {
-                questionImage.innerHTML = qData.img;
-                questionImage.style.display = 'flex';
-            } else {
-                questionImage.innerHTML = '';
-                questionImage.style.display = 'none';
-            }
-
             choicesArea.innerHTML = '';
             const shuffledChoices = shuffleArray(qData.c);
 
@@ -287,41 +172,42 @@
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
                 btn.textContent = choice;
-                btn.onclick = () => checkAnswer(choice, qData.a, btn);
+                btn.onclick = () => checkAnswer(choice, qData.a, qData.exp, btn);
                 choicesArea.appendChild(btn);
             });
         }
 
-        function checkAnswer(selected, correct, btn) {
+        function checkAnswer(selected, correct, expText, btn) {
             const buttons = document.querySelectorAll('.choice-btn');
             buttons.forEach(b => b.disabled = true);
 
             if (selected === correct) {
                 playSound('correct');
                 btn.style.backgroundColor = '#81c784';
-                btn.textContent = "⭕ せいかい！ " + btn.textContent;
-                score++;
+                btn.innerHTML = "⭕ せいかい！<br>" + btn.textContent;
+                score++; combo++;
+                if(combo > maxCombo) maxCombo = combo;
+                if(combo > 1) document.getElementById('combo-display').textContent = `${combo} 連続正解中！🔥`;
             } else {
                 playSound('incorrect');
                 btn.style.backgroundColor = '#e57373';
-                btn.textContent = "❌ ざんねん！ " + btn.textContent;
+                btn.innerHTML = "❌ ざんねん！<br>" + btn.textContent;
+                combo = 0; document.getElementById('combo-display').textContent = "";
                 buttons.forEach(b => {
                     if(b.textContent === correct) {
                         b.style.backgroundColor = '#81c784';
-                        b.textContent = "⭕ これが正解 " + b.textContent;
+                        b.innerHTML = "⭕ こっちが正解！<br>" + b.textContent;
                     }
                 });
             }
+            document.getElementById('explanation-text').textContent = expText;
+            document.getElementById('explanation-area').style.display = 'block';
+        }
 
-            setTimeout(() => {
-                currentQuestionIndex++;
-                updateProgress();
-                if (currentQuestionIndex < currentQuestions.length) {
-                    showQuestion();
-                } else {
-                    showResult();
-                }
-            }, 1500);
+        function nextQuestion() {
+            currentQuestionIndex++;
+            updateProgress();
+            if (currentQuestionIndex < currentQuestions.length) { showQuestion(); } else { showResult(); }
         }
 
         function updateProgress() {
@@ -332,17 +218,16 @@
 
         function showResult() {
             playSound('clear');
-
             document.getElementById('game-area').style.display = 'none';
             document.getElementById('result-area').style.display = 'block';
             document.getElementById('score').textContent = score;
+            document.getElementById('max-combo').textContent = maxCombo;
 
             let rank = "";
-            if (score === 10) rank = "👑 すばらしい！きみは「まちたんけんマスター」だ！";
+            if (score === 10) rank = "👑 すばらしい！きみは「まちたんけん名人」だ！";
             else if (score >= 8) rank = "🎖️ すごい！「ベテランたんけん隊長」だ！";
             else if (score >= 5) rank = "🚶 よくがんばった！「一人前たんけん隊員」だ！";
             else rank = "🐣 まだまだこれから！「みならい隊員」だ！";
-
             document.getElementById('rank-text').textContent = rank;
         }
 
