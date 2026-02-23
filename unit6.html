@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⑥ 事故からまちを守る - たんけんクエスト</title>
+    <style>
+        body { font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif; background-color: #e8eaf6; color: #333; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #1a237e; margin-bottom: 5px;}
+        .game-container { background-color: white; max-width: 600px; margin: 0 auto; border-radius: 15px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 4px solid #3f51b5; }
+        
+        .status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; }
+        .combo-text { color: #ffeb3b; text-shadow: 1px 1px 2px #f57f17; font-size: 1.2em; animation: bounce 0.3s ease; }
+        @keyframes bounce { 0% {transform: scale(1);} 50% {transform: scale(1.2);} 100% {transform: scale(1);} }
+
+        .progress-container { width: 100%; background-color: #ddd; border-radius: 10px; margin-bottom: 20px; height: 30px; position: relative; }
+        .progress-bar { height: 100%; background-color: #3f51b5; border-radius: 10px; width: 0%; transition: width 0.5s ease; }
+        .player-icon { position: absolute; top: -10px; left: 0%; font-size: 30px; transition: left 0.5s ease; transform: translateX(-50%); }
+        .goal-icon { position: absolute; top: 0; right: 5px; font-size: 20px; }
+        
+        /* 警察官風の問題文エリア */
+        .mission-label { background-color: #1a237e; color: white; border-radius: 5px; padding: 5px 10px; font-size: 0.9em; display: inline-block; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px;}
+        .question-text { font-size: 1.2em; margin-bottom: 20px; font-weight: bold; min-height: 2em; line-height: 1.4; border-left: 5px solid #1a237e; padding-left: 10px; text-align: left; }
+
+        /* グラフエリア */
+        #graph-area { display: none; background-color: #f5f5f5; border: 2px solid #9fa8da; border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: left; }
+        .graph-title { font-weight: bold; color: #1a237e; margin-bottom: 10px; text-align: center;}
+        .bar-row { display: flex; align-items: center; margin-bottom: 8px; }
+        .bar-label { width: 100px; font-weight: bold; font-size: 0.9em; }
+        .bar-track { flex-grow: 1; background-color: #e0e0e0; border-radius: 5px; height: 20px; overflow: hidden; position: relative; }
+        .bar-fill { height: 100%; border-radius: 5px; transition: width 1s ease-out; }
+
+        .choices { display: flex; flex-direction: column; gap: 10px; }
+        .choice-btn { background-color: #e3f2fd; border: 2px solid #64b5f6; border-radius: 10px; padding: 15px; font-size: 1.1em; cursor: pointer; transition: all 0.2s; font-weight: bold; color: #0d47a1; }
+        .choice-btn:hover { background-color: #bbdefb; transform: translateY(-2px); }
+        .choice-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+
+        #explanation-area { display: none; margin-top: 20px; padding: 15px; background-color: #fff8e1; border: 2px dashed #ffb300; border-radius: 10px; text-align: left; font-size: 1.1em; color: #ff8f00; }
+        .next-btn { margin-top: 15px; padding: 15px 30px; background-color: #1a237e; color: white; border: none; border-radius: 30px; font-size: 1.2em; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 0 #000051; }
+        .next-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        #result-area { display: none; }
+        .result-title { font-size: 2em; color: #1a237e; margin-bottom: 10px; }
+        .reflection-box { background-color: #fff9c4; border: 2px solid #fbc02d; border-radius: 10px; padding: 15px; margin: 20px 0; text-align: left; color: #333;}
+        .back-btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #3f51b5; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>🚓 めざせ！一流警察官</h1>
+    <p style="margin-top:0;">事故や事件からまちを守る、警察の仕事と地域の安全を学ぼう！</p>
+
+    <div class="game-container" id="game-area">
+        <div class="status-bar">
+            <span id="stage-info" style="color: #666;"></span>
+            <span id="combo-display" class="combo-text"></span>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="player-icon" id="player-icon">👮</div>
+            <div class="goal-icon">🚨</div>
+        </div>
+
+        <div class="mission-label" id="mission-label">パトロール開始！</div>
+        
+        <div id="graph-area">
+            <div class="graph-title">📊 交通事故の件数の変化</div>
+            <div class="bar-row"><span class="bar-label">約20年前</span><div class="bar-track"><div class="bar-fill" style="width: 0%; background-color: #1e88e5;" data-width="95%"></div></div></div>
+            <div class="bar-row"><span class="bar-label">約10年前</span><div class="bar-track"><div class="bar-fill" style="width: 0%; background-color: #43a047;" data-width="60%"></div></div></div>
+            <div class="bar-row"><span class="bar-label">現在</span><div class="bar-track"><div class="bar-fill" style="width: 0%; background-color: #fdd835;" data-width="25%"></div></div></div>
+        </div>
+
+        <div class="question-text" id="question-text">ロード中...</div>
+        
+        <div class="choices" id="choices-area"></div>
+
+        <div id="explanation-area">
+            <div style="font-weight:bold; margin-bottom:5px;">💡 任務レポート（なぜかな？）</div>
+            <div id="explanation-text"></div>
+            <button class="next-btn" onclick="nextQuestion()">次の任務へ ➡️</button>
+        </div>
+    </div>
+
+    <div class="game-container" id="result-area">
+        <div class="result-title">本日のパトロール 完了！</div>
+        <p style="font-size: 1.5em;">正しい判断：<span id="score"></span> / 10</p>
+        <p style="font-size: 1.2em; color: #f57f17; font-weight: bold;">最大連続正解：<span id="max-combo"></span> コンボ！</p>
+        <div id="rank-text" style="font-size: 1.3em; font-weight: bold; margin: 10px 0;"></div>
+        
+        <div class="reflection-box">
+            <h3 style="margin-top:0; color: #d84315;">📝 警察手帳（ノート）にふり返りを書こう！</h3>
+            <p>警察官の仕事や、まちにある安全のための設備（カーブミラーなど）で<b>「なるほど！」</b>と思ったことは何かな？<br>また、自分が気をつけたい「交通ルール」と一緒にノートにまとめよう。</p>
+        </div>
+
+        <button class="choice-btn" style="width:100%; margin-bottom:10px; background-color:#e8eaf6;" onclick="initGame()">もういちど パトロールする</button>
+        <a href="index.html" class="back-btn" style="width:90%;">🏠 ポータルにもどる</a>
+    </div>
+
+    <script>
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function playTone(freq, type, duration, vol=0.1) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = type;
+            oscillator.frequency.value = freq;
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+        function playSound(type) {
+            if (type === 'correct') { playTone(523.25, 'sine', 0.1); setTimeout(() => playTone(659.25, 'sine', 0.2), 100); }
+            else if (type === 'incorrect') { playTone(250, 'sawtooth', 0.2, 0.2); setTimeout(() => playTone(200, 'sawtooth', 0.3, 0.2), 150); }
+            else if (type === 'clear') { playTone(523.25, 'square', 0.15); setTimeout(() => playTone(523.25, 'square', 0.15), 150); setTimeout(() => playTone(523.25, 'square', 0.15), 300); setTimeout(() => playTone(1046.50, 'square', 0.4), 450); }
+        }
+
+        // 全16問の問題プール（グラフ問題含む）
+        const allQuestions = {
+            stage1: [ // 110番と警察の仕事
+                { q: "交通事故やどろぼうなど、急いで警察を呼びたいときにかける番号は？", c: ["１１０番", "１１９番", "１７７番"], a: "１１０番", exp: "事件や事故のときは「１１０番」！警察本部の通信指令室（つうしんしれいしつ）につながるよ。" },
+                { q: "１１０番に電話したとき、通信指令室ではどうやって事故の場所をすばやく見つける？", c: ["GPSや大きな地図の画面を使う", "電話帳をパラパラめくる", "外に出て探す"], a: "GPSや大きな地図の画面を使う", exp: "どこから電話がかかってきたか、大きな画面の地図にすぐに表示されるシステムがあるから、すぐにパトカーを向かわせられるんだ。" },
+                { q: "通信指令室から連絡を受けて、現場に一番早くかけつけるのは誰？", c: ["近くにいるパトカーや交番のおまわりさん", "市長さん", "消防士さん"], a: "近くにいるパトカーや交番のおまわりさん", exp: "GPSで一番近くにいるパトカーを探して、「すぐに行って！」と無線で指示を出すから早いんだよ。" },
+                { q: "まちにある「交番（こうばん）」のおもな仕事はどれ？", c: ["パトロールや、落とし物のうけとり", "火を消すこと", "切手を売ること"], a: "パトロールや、落とし物のうけとり", exp: "交番はまちの安全を守る基地。道案内をしたり、迷子を助けたり、パトロールをしたりしているよ。" },
+                { q: "パトカーや白バイがまちを走っている（パトロールする）のはなぜ？", c: ["事故や事件をふせぎ、交通ルールを守らせるため", "ドライブを楽しむため", "サイレンの音をテストするため"], a: "事故や事件をふせぎ、交通ルールを守らせるため", exp: "警察官がまちを見回っていると、みんなが交通ルールをしっかり守るようになり、悪いことをする人も減るんだ。" }
+            ],
+            stage2: [ // まちの安全設備と標識
+                { q: "見通しの悪いカーブや交差点にあり、見えない車や人をうつして確認する鏡は何？", c: ["カーブミラー", "手かがみ", "虫めがね"], a: "カーブミラー", exp: "丸くて大きな鏡だね。曲がり角の先から車や自転車が来ていないか、よく見て確認しよう！" },
+                { q: "車道と歩道を分けて、車が歩道に飛び込んでこないようにするための安全な柵（さく）は？", c: ["ガードレール", "横断歩道（おうだんほどう）", "ハードル"], a: "ガードレール", exp: "白や緑色の鉄の柵で、歩いている人たちを交通事故から守ってくれる大切なものだよ。" },
+                { q: "子どもたちが安全に学校へ通えるように、決まった時間に車の通行を禁止する道路のマークは？", c: ["スクールゾーン", "パーキングエリア", "スタートライン"], a: "スクールゾーン", exp: "登下校の時間には、このマークのある道には車が入ってこられないようになっているんだ。" },
+                { q: "道路にある「止まれ」の標識。どういう意味かな？", c: ["車や自転車は必ず一時停止して、左右の安全をたしかめる", "少しだけスピードを落とす", "ここで車を停めてお昼ごはんを食べる"], a: "車や自転車は必ず一時停止して、左右の安全をたしかめる", exp: "赤い逆三角形のマークだよ。ここでしっかり止まらないと、大きな事故につながってしまうんだ。" },
+                { q: "黄色いひし形で、中に子どもの絵が描いてある標識。どんな意味？", c: ["学校や幼稚園が近くにあり、子どもが飛び出すかもしれない", "近くに公園があるから遊んでいい", "大人は通ってはいけない"], a: "学校や幼稚園が近くにあり、子どもが飛び出すかもしれない", exp: "「学校、幼稚園、保育所等あり」という標識だよ。運転する人に「気をつけて！」と教えているんだ。" }
+            ],
+            stage3: [ // グラフと地域の協力
+                { q: "上の「交通事故の件数グラフ」を見てみよう。事故の数は、昔から比べてどうなっている？", c: ["だんだん減っている", "どんどん増えている", "まったく変わらない"], a: "だんだん減っている", exp: "車は昔より安全になり、標識も増え、みんなが交通ルールを守るようになったから事故は減っているんだよ。", useGraph: true },
+                { q: "警察官の人が、学校や幼稚園に来て、安全な歩き方や自転車の乗り方を教えてくれることを何という？", c: ["交通安全教室（こうつうあんぜんきょうしつ）", "算数の授業", "運動会"], a: "交通安全教室（こうつうあんぜんきょうしつ）", exp: "「横断歩道は手を挙げて渡る」「自転車はヘルメットをかぶる」など、自分の命を守る大切な授業だね。" },
+                { q: "朝や夕方、交差点などに立って、子どもたちが安全に道を渡れるように見守ってくれているのは誰？", c: ["地域の人たち（見守り隊）や保護者", "タクシーの運転手さん", "テレビのカメラマン"], a: "地域の人たち（見守り隊）や保護者", exp: "警察官だけじゃなく、まちの大人たちが協力して、みんなの安全を守ってくれているんだ。あいさつしようね！" },
+                { q: "登下校のとき、あやしい人に声をかけられたり、危険な目にあったりしたときに逃げ込める家やお店は？", c: ["こども１１０番の家", "コンビニエンスストア", "レストラン"], a: "こども１１０番の家", exp: "黄色い看板やステッカーが目印！逃げ込んだら、すぐに大人や警察に連絡してくれるよ。" }
+            ],
+            boss: { 
+                q: "交通事故をなくし、みんなが安心して暮らせるまちをつくるために、一番大切なことはどれ？", 
+                c: ["警察、まちの人、そして私たち一人ひとりがルールを守り、協力しあうこと", "警察官をいまの１００倍に増やすこと", "まちから車をぜんぶなくすこと"], 
+                a: "警察、まちの人、そして私たち一人ひとりがルールを守り、協力しあうこと", 
+                exp: "ミッション完了！すばらしい！標識や警察の働きも大切だけど、最後に命を守るのは「私たち自身がルールを守る心」なんだね！" 
+            }
+        };
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0, combo = 0, maxCombo = 0;
+
+        function shuffleArray(array) { const newArray = [...array]; for (let i = newArray.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [newArray[i], newArray[j]] = [newArray[j], newArray[i]]; } return newArray; }
+
+        function initGame() {
+            // ランダムに抽出
+            const s1 = shuffleArray(allQuestions.stage1).slice(0, 3);
+            const s2 = shuffleArray(allQuestions.stage2).slice(0, 4);
+            const s3 = shuffleArray(allQuestions.stage3).slice(0, 2);
+            
+            currentQuestions = [...s1, ...s2, ...s3, allQuestions.boss];
+            currentQuestionIndex = 0; score = 0; combo = 0; maxCombo = 0;
+
+            document.getElementById('result-area').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            document.getElementById('combo-display').textContent = "";
+            
+            updateProgress();
+            showQuestion();
+        }
+
+        function showQuestion() {
+            document.getElementById('explanation-area').style.display = 'none';
+            const qData = currentQuestions[currentQuestionIndex];
+            const choicesArea = document.getElementById('choices-area');
+            const stageInfo = document.getElementById('stage-info');
+            const missionLabel = document.getElementById('mission-label');
+            const graphArea = document.getElementById('graph-area');
+            
+            // グラフの表示制御とアニメーション
+            if(qData.useGraph) {
+                graphArea.style.display = 'block';
+                // バーのアニメーションをリセットして再実行
+                const fills = document.querySelectorAll('.bar-fill');
+                fills.forEach(fill => {
+                    fill.style.width = '0%';
+                    setTimeout(() => { fill.style.width = fill.getAttribute('data-width'); }, 100);
+                });
+            } else {
+                graphArea.style.display = 'none';
+            }
+
+            if(currentQuestionIndex < 3) { stageInfo.textContent = "📞 任務1：110番のしくみ"; missionLabel.textContent = "出動要請！急行せよ！"; }
+            else if(currentQuestionIndex < 7) { stageInfo.textContent = "🚓 任務2：警察の仕事と設備"; missionLabel.textContent = "まちの安全を確認せよ！"; }
+            else if(currentQuestionIndex < 9) { stageInfo.textContent = "🤝 任務3：地域の協力と変化"; missionLabel.textContent = "みんなで守る安全だ！"; }
+            else { stageInfo.textContent = "👑 最終任務：警察の心"; missionLabel.textContent = "さいごの試練だ！"; }
+
+            document.getElementById('question-text').textContent = `Q${currentQuestionIndex + 1}. ${qData.q}`;
+            
+            choicesArea.innerHTML = '';
+            const shuffledChoices = shuffleArray(qData.c);
+
+            shuffledChoices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = choice;
+                btn.onclick = () => checkAnswer(choice, qData.a, qData.exp, btn);
+                choicesArea.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct, expText, btn) {
+            const buttons = document.querySelectorAll('.choice-btn');
+            buttons.forEach(b => b.disabled = true);
+
+            if (selected === correct) {
+                playSound('correct');
+                btn.style.backgroundColor = '#1a237e';
+                btn.style.color = '#fff';
+                btn.innerHTML = "⭕ 正解！よくやった！<br>" + btn.textContent;
+                score++; combo++;
+                if(combo > maxCombo) maxCombo = combo;
+                if(combo > 1) document.getElementById('combo-display').textContent = `${combo} 連続正解中！🚨`;
+            } else {
+                playSound('incorrect');
+                btn.style.backgroundColor = '#9e9e9e';
+                btn.style.color = '#fff';
+                btn.innerHTML = "❌ ミスだ！確認しろ！<br>" + btn.textContent;
+                combo = 0; document.getElementById('combo-display').textContent = "";
+                buttons.forEach(b => {
+                    if(b.textContent === correct) {
+                        b.style.backgroundColor = '#1a237e';
+                        b.style.color = '#fff';
+                        b.innerHTML = "⭕ こっちが正解だ！<br>" + b.textContent;
+                    }
+                });
+            }
+            document.getElementById('explanation-text').textContent = expText;
+            document.getElementById('explanation-area').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            updateProgress();
+            if (currentQuestionIndex < currentQuestions.length) { showQuestion(); } else { showResult(); }
+        }
+
+        function updateProgress() {
+            const percentage = (currentQuestionIndex / 10) * 100;
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('player-icon').style.left = percentage + '%';
+        }
+
+        function showResult() {
+            playSound('clear');
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('result-area').style.display = 'block';
+            document.getElementById('score').textContent = score;
+            document.getElementById('max-combo').textContent = maxCombo;
+
+            let rank = "";
+            if (score === 10) rank = "👑 伝説の警察署長！まちの平和は君が守る！";
+            else if (score >= 8) rank = "🚓 一流の警察官！頼りになるぞ！";
+            else if (score >= 5) rank = "👮 一人前のおまわりさん！パトロールを続けよう！";
+            else rank = "🐣 みならい警察官！まずは交通ルールからだ！";
+            document.getElementById('rank-text').textContent = rank;
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
