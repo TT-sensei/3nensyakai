@@ -3,145 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3ねんせい しゃかい たんけんポータル！</title>
+    <title>3ねんせい しゃかいか クエスト</title>
     <style>
         body {
             font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif;
-            background-color: #f0f8ff; /* やさしい水色 */
+            background-color: #e0f7fa;
             color: #333;
-            margin: 0;
-            padding: 20px;
             text-align: center;
-        }
-
-        header {
-            background-color: #ff9800; /* 元気なオレンジ */
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        h1 {
             margin: 0;
-            font-size: 2.5em;
-            letter-spacing: 2px;
+            padding: 20px;
         }
-
+        h1 {
+            color: #00796b;
+            font-size: 2.5em;
+            text-shadow: 2px 2px white;
+            margin-bottom: 10px;
+        }
         p.subtitle {
             font-size: 1.2em;
             font-weight: bold;
-            margin-top: 10px;
+            color: #555;
+            margin-bottom: 30px;
         }
-
-        .container {
+        .portal-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             gap: 20px;
-            max-width: 1000px;
+            max-width: 800px;
             margin: 0 auto;
         }
-
-        .unit-card {
+        .quest-card {
             background-color: white;
-            width: 280px;
-            padding: 20px;
             border-radius: 20px;
+            width: 300px;
+            padding: 20px;
             text-decoration: none;
             color: #333;
-            border: 4px solid #ddd;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            border: 4px solid #b2dfdb;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-
-        /* ホバー時のワクワクする動き */
-        .unit-card:hover {
+        .quest-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            border-color: #009688;
         }
-
-        /* 各単元のテーマカラー */
-        .card-1 { border-color: #4caf50; } /* 緑：まちの様子 */
-        .card-1:hover { background-color: #e8f5e9; }
-        
-        .card-2 { border-color: #e91e63; } /* ピンク：スーパー */
-        .card-2:hover { background-color: #fce4ec; }
-        
-        .card-3 { border-color: #3f51b5; } /* 青：工場 */
-        .card-3:hover { background-color: #e8eaf6; }
-        
-        .card-4 { border-color: #f44336; } /* 赤：火事 */
-        .card-4:hover { background-color: #ffebee; }
-        
-        .card-5 { border-color: #ffc107; } /* 黄色：事故 */
-        .card-5:hover { background-color: #fff8e1; }
-        
-        .card-6 { border-color: #9c27b0; } /* 紫：移り変わり */
-        .card-6:hover { background-color: #f3e5f5; }
-
-        .icon {
-            font-size: 3em;
+        .card-icon {
+            font-size: 4em;
             margin-bottom: 10px;
-            display: block;
         }
-
-        .unit-title {
+        .card-title {
             font-size: 1.4em;
             font-weight: bold;
-            margin: 10px 0;
+            color: #00796b;
+            margin-bottom: 10px;
+            width: 100%;
+            border-bottom: 2px dashed #b2dfdb;
+            padding-bottom: 10px;
         }
-
-        .unit-desc {
+        .card-desc {
             font-size: 1em;
             color: #666;
-            margin: 0;
+            line-height: 1.4;
+        }
+        /* 準備中のカード用 */
+        .coming-soon {
+            filter: grayscale(80%);
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .coming-soon:hover {
+            transform: none;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            border-color: #b2dfdb;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>🗺️ 3ねんせい しゃかい たんけんポータル</h1>
-        <p class="subtitle">まちの ひみつを さがしにいこう！</p>
-    </header>
+    <h1>🌟 3ねんせい しゃかいか クエスト 🌟</h1>
+    <p class="subtitle">どのクエストに ちょうせん する？</p>
 
-    <div class="container">
-        <a href="unit1.html" class="unit-card card-1">
-            <span class="icon">🏘️</span>
-            <div class="unit-title">① わたしたちの まち</div>
-            <p class="unit-desc">まちには どんなものがあるかな？</p>
+    <div class="portal-container">
+        <a href="unit1.html" class="quest-card">
+            <div class="card-icon">🗺️</div>
+            <div class="card-title">① わたしたちの まち</div>
+            <div class="card-desc">方位や地図記号をおぼえて、まちのひみつをはっけんしよう！</div>
         </a>
 
-        <a href="unit2.html" class="unit-card card-2">
-            <span class="icon">🛒</span>
-            <div class="unit-title">② スーパーの くふう</div>
-            <p class="unit-desc">お買いものの ひみつを さぐれ！</p>
+        <a href="unit2.html" class="quest-card">
+            <div class="card-icon">🏙️</div>
+            <div class="card-title">② わたしたちの 市</div>
+            <div class="card-desc">市の様子や、土地がどんなふうに使われているかしらべよう！</div>
         </a>
 
-        <a href="unit3.html" class="unit-card card-3">
-            <span class="icon">🏭</span>
-            <div class="unit-title">③ 工場の ようす</div>
-            <p class="unit-desc">ものづくりの 現場に せまろう！</p>
+        <a href="unit3.html" class="quest-card">
+            <div class="card-icon">🛒</div>
+            <div class="card-title">③ スーパーの くふう</div>
+            <div class="card-desc">お店の人がしている、たくさんのお客さんに来てもらう工夫とは？</div>
         </a>
 
-        <a href="unit4.html" class="unit-card card-4">
-            <span class="icon">🚒</span>
-            <div class="unit-title">④ 火事を ふせぐ</div>
-            <p class="unit-desc">みんなの 命を まもる しごと</p>
-        </a>
-
-        <a href="unit5.html" class="unit-card card-5">
-            <span class="icon">🚓</span>
-            <div class="unit-title">⑤ 事故を ふせぐ</div>
-            <p class="unit-desc">安全な まちづくり大作戦！</p>
-        </a>
-
-        <a href="unit6.html" class="unit-card card-6">
-            <span class="icon">⏳</span>
-            <div class="unit-title">⑥ まちの うつりかわり</div>
-            <p class="unit-desc">むかしと 今を くらべてみよう！</p>
+        <a href="#" class="quest-card coming-soon">
+            <div class="card-icon">🏭</div>
+            <div class="card-title">④ 工場・農家の しごと</div>
+            <div class="card-desc">（じゅんびちゅう・・・もう少し待ってね！）</div>
         </a>
     </div>
 
