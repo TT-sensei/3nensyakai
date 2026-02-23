@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>① わたしたちの まち - たんけんクエスト</title>
+    <style>
+        body {
+            font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif;
+            background-color: #e8f5e9;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { color: #2e7d32; }
+        .game-container {
+            background-color: white;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 4px solid #4caf50;
+        }
+        /* 探検ゲージ */
+        .progress-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 30px;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #4caf50;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .player-icon {
+            position: absolute;
+            top: -10px;
+            left: 0%;
+            font-size: 30px;
+            transition: left 0.5s ease;
+            transform: translateX(-50%);
+        }
+        .goal-icon {
+            position: absolute;
+            top: 0;
+            right: 5px;
+            font-size: 20px;
+        }
+        /* 問題と選択肢 */
+        .question-text {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 3em;
+        }
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .choice-btn {
+            background-color: #f1f8e9;
+            border: 2px solid #8bc34a;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .choice-btn:hover {
+            background-color: #c5e1a5;
+            transform: translateY(-2px);
+        }
+        .choice-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        /* 結果表示 */
+        #result-area { display: none; }
+        .result-title { font-size: 2em; color: #ff9800; margin-bottom: 10px; }
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #ff9800;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🗺️ まちたんけん クエスト！</h1>
+    <p>クイズにこたえて、まちのひみつをはっけんしよう！</p>
+
+    <div class="game-container" id="game-area">
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="player-icon" id="player-icon">🚶</div>
+            <div class="goal-icon">🚩</div>
+        </div>
+
+        <div id="stage-info" style="color: #666; font-weight: bold; margin-bottom: 10px;"></div>
+        <div class="question-text" id="question-text">ロード中...</div>
+        
+        <div class="choices" id="choices-area">
+            </div>
+    </div>
+
+    <div class="game-container" id="result-area">
+        <div class="result-title">たんけん しゅうりょう！</div>
+        <p style="font-size: 1.5em;">せいかい：<span id="score"></span> / 10問</p>
+        <div id="rank-text" style="font-size: 1.3em; font-weight: bold; margin: 20px 0;"></div>
+        <button class="choice-btn" onclick="initGame()">もういちど たんけんする</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 ポータルにもどる</a>
+    </div>
+
+    <script>
+        // --- 効果音のしくみ（Web Audio API） ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function playTone(freq, type, duration, vol=0.1) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.type = type;
+            oscillator.frequency.value = freq;
+            
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSound(type) {
+            if (type === 'correct') {
+                playTone(523.25, 'sine', 0.1); // ド
+                setTimeout(() => playTone(659.25, 'sine', 0.2), 100); // ミ
+            } else if (type === 'incorrect') {
+                playTone(250, 'sawtooth', 0.2, 0.2); // 低いブー
+                setTimeout(() => playTone(200, 'sawtooth', 0.3, 0.2), 150);
+            } else if (type === 'clear') {
+                playTone(523.25, 'square', 0.15); // ド
+                setTimeout(() => playTone(523.25, 'square', 0.15), 150); // ド
+                setTimeout(() => playTone(523.25, 'square', 0.15), 300); // ド
+                setTimeout(() => playTone(783.99, 'square', 0.4), 450);  // ソ
+            }
+        }
+        // ------------------------------------
+
+        // 送っていただいた画像をもとに作成した30問のデータ
+        const allQuestions = {
+            stage1: [
+                { q: "方位（ほうい）を調べるための道具はどれ？", c: ["方位じしん", "温度計", "虫めがね", "時計"], a: "方位じしん" },
+                { q: "方位じしんの色がついた針は、ふつうどの方位をさす？", c: ["北", "南", "東", "西"], a: "北" },
+                { q: "方位は「東・西・南・〇」あと一つは？", c: ["北", "右", "上", "前"], a: "北" },
+                { q: "地図はふつう、どの方位が「上」になるようにかかれている？", c: ["北", "南", "東", "西"], a: "北" },
+                { q: "北が「上」じゃない地図には、何がかかれている？", c: ["方位をさめすしるし", "地図記号", "温度", "住所"], a: "方位をさめすしるし" },
+                { q: "まちたんけんで調べたことを、絵や図であらわしたものを何という？", c: ["絵地図", "写真", "ポスター", "カレンダー"], a: "絵地図" },
+                { q: "絵地図をかくとき、わかりやすくするための工夫はどれ？", c: ["色分けしてまとめる", "全部同じ色でかく", "文字だけでかく", "見なかったことにする"], a: "色分けしてまとめる" },
+                { q: "絵地図で、どんな場所かわかるように決めるものはどれ？", c: ["記号やしるし", "ねだん", "人の名前", "色だけのルール"], a: "記号やしるし" },
+                { q: "太陽がのぼる方角はどれかな？", c: ["東", "西", "南", "北"], a: "東" },
+                { q: "太陽がしずむ方角はどれかな？", c: ["西", "東", "南", "北"], a: "西" }
+            ],
+            stage2: [
+                { q: "「文」の形をした地図記号はなに？", c: ["学校", "交番", "図書館", "市役所"], a: "学校" },
+                { q: "「〒」のマークが入っている〇の地図記号はなに？", c: ["郵便局", "警察署", "病院", "工場"], a: "郵便局" },
+                { q: "「＋」のマークが入っている盾(たて)みたいな地図記号はなに？", c: ["病院", "消防署", "寺", "神社"], a: "病院" },
+                { q: "「×」の形をした地図記号はなに？", c: ["交番", "学校", "畑", "橋"], a: "交番" },
+                { q: "「Ｙ」みたいな形の下に線がある地図記号はなに？", c: ["消防署", "木", "果樹園", "警察署"], a: "消防署" },
+                { q: "「卍(まんじ)」の形をした地図記号はなに？", c: ["寺", "神社", "病院", "市役所"], a: "寺" },
+                { q: "鳥居(とりい)の形をした地図記号はなに？", c: ["神社", "寺", "学校", "博物館"], a: "神社" },
+                { q: "本を開いたような形の地図記号はなに？", c: ["図書館", "学校", "本屋", "博物館"], a: "図書館" },
+                { q: "太陽みたいなギザギザの丸の地図記号はなに？", c: ["工場", "発電所", "市役所", "交番"], a: "工場" },
+                { q: "二重丸（◎）の地図記号はなに？", c: ["市役所", "警察署", "郵便局", "病院"], a: "市役所" }
+            ],
+            stage3: [
+                { q: "みんなのためにつくられた施設を何という？", c: ["公共しせつ", "お店", "工場", "遊園地"], a: "公共しせつ" },
+                { q: "次の中で「公共しせつ」はどれ？", c: ["図書館", "スーパー", "ケーキ屋", "くつ屋"], a: "図書館" },
+                { q: "まちたんけんで、気づいたことをのこすために使うものは？", c: ["メモやカード", "お金", "おもちゃ", "おかし"], a: "メモやカード" },
+                { q: "メモには、文字のほかに何をかくとわかりやすい？", c: ["絵や写真", "音楽", "におい", "味"], a: "絵や写真" },
+                { q: "古い建物が多いのはどんなところ？", c: ["寺や神社", "スーパー", "コンビニ", "新しいマンション"], a: "寺や神社" },
+                { q: "次の中で「公共しせつ」ではないものはどれ？", c: ["スーパーマーケット", "公民館", "消防署", "警察署"], a: "スーパーマーケット" },
+                { q: "病院はどんな場所？", c: ["病気やケガをなおすところ", "本を借りるところ", "お金をあずけるところ", "買い物するところ"], a: "病気やケガをなおすところ" },
+                { q: "警察署や交番の人は何をしてくれる？", c: ["まちの安全を守る", "火事を消す", "手紙を届ける", "パンを焼く"], a: "まちの安全を守る" },
+                { q: "消防署の人は何をしてくれる？", c: ["火事を消す", "どろぼうをつかまえる", "本を貸す", "病気をなおす"], a: "火事を消す" },
+                { q: "本がたくさんおいてあり、だれでも借りられる場所は？", c: ["図書館", "公民館", "市役所", "博物館"], a: "図書館" }
+            ]
+        };
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function initGame() {
+            const s1 = shuffleArray(allQuestions.stage1).slice(0, 3);
+            const s2 = shuffleArray(allQuestions.stage2).slice(0, 3);
+            const s3 = shuffleArray(allQuestions.stage3).slice(0, 3);
+            
+            const remainings = [...allQuestions.stage1, ...allQuestions.stage2, ...allQuestions.stage3]
+                .filter(q => !s1.includes(q) && !s2.includes(q) && !s3.includes(q));
+            const boss = shuffleArray(remainings).slice(0, 1);
+
+            currentQuestions = [...s1, ...s2, ...s3, ...boss];
+            currentQuestionIndex = 0;
+            score = 0;
+
+            document.getElementById('result-area').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            
+            updateProgress();
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const qData = currentQuestions[currentQuestionIndex];
+            const choicesArea = document.getElementById('choices-area');
+            const stageInfo = document.getElementById('stage-info');
+            
+            if(currentQuestionIndex < 3) stageInfo.textContent = "🗺️ ステージ1：方位と地図のきまり";
+            else if(currentQuestionIndex < 6) stageInfo.textContent = "🔍 ステージ2：地図記号のなぞ";
+            else if(currentQuestionIndex < 9) stageInfo.textContent = "🏫 ステージ3：まちの施設";
+            else stageInfo.textContent = "👹 さいごの試練：まちのひみつボス！";
+
+            document.getElementById('question-text').textContent = `第 ${currentQuestionIndex + 1} 問： ${qData.q}`;
+            choicesArea.innerHTML = '';
+
+            const shuffledChoices = shuffleArray(qData.c);
+
+            shuffledChoices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = choice;
+                btn.onclick = () => checkAnswer(choice, qData.a, btn);
+                choicesArea.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct, btn) {
+            const buttons = document.querySelectorAll('.choice-btn');
+            buttons.forEach(b => b.disabled = true);
+
+            if (selected === correct) {
+                playSound('correct'); // ★正解の音を鳴らす
+                btn.style.backgroundColor = '#81c784';
+                btn.textContent = "⭕ せいかい！ " + btn.textContent;
+                score++;
+            } else {
+                playSound('incorrect'); // ★不正解の音を鳴らす
+                btn.style.backgroundColor = '#e57373';
+                btn.textContent = "❌ ざんねん！ " + btn.textContent;
+                buttons.forEach(b => {
+                    if(b.textContent === correct) {
+                        b.style.backgroundColor = '#81c784';
+                        b.textContent = "⭕ これが正解 " + b.textContent;
+                    }
+                });
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                updateProgress();
+                if (currentQuestionIndex < currentQuestions.length) {
+                    showQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1500);
+        }
+
+        function updateProgress() {
+            const percentage = (currentQuestionIndex / 10) * 100;
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('player-icon').style.left = percentage + '%';
+        }
+
+        function showResult() {
+            playSound('clear'); // ★クリアの音を鳴らす
+
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('result-area').style.display = 'block';
+            document.getElementById('score').textContent = score;
+
+            let rank = "";
+            if (score === 10) rank = "👑 すばらしい！きみは「まちたんけんマスター」だ！";
+            else if (score >= 8) rank = "🎖️ すごい！「ベテランたんけん隊長」だ！";
+            else if (score >= 5) rank = "🚶 よくがんばった！「一人前たんけん隊員」だ！";
+            else rank = "🐣 まだまだこれから！「みならい隊員」だ！";
+
+            document.getElementById('rank-text').textContent = rank;
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
