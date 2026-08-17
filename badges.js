@@ -79,7 +79,7 @@
   function hookResult() {
     if (typeof window.showResult !== 'function' || window.showResult.__badges) return;
     const original = window.showResult;
-    const wrapped = function() { original.apply(this, arguments); const unit = location.pathname.match(/unit([1-7])\.html/)?.[1]; if (unit) awardResult('unit' + unit, window.score || 0, window.maxCombo || 0); };
+    const wrapped = function() { original.apply(this, arguments); const unit = location.pathname.match(/unit([1-7])\.html/)?.[1]; if (unit) { let resultScore = 0, resultCombo = 0; try { resultScore = Number(eval('score')) || 0; resultCombo = Number(eval('maxCombo')) || 0; } catch (_) {} awardResult('unit' + unit, resultScore, resultCombo); } };
     wrapped.__badges = true; window.showResult = wrapped;
   }
   document.addEventListener('DOMContentLoaded', () => { stylesheet(); if (location.pathname.endsWith('/') || location.pathname.endsWith('/index.html')) renderPortal(false); hookResult(); });
