@@ -157,6 +157,8 @@
     speech.id = "edu-coach-speech";
     speech.setAttribute("aria-live", "polite");
     speech.textContent = unitMeta[unit].guide;
+    copy.appendChild(label);
+    copy.appendChild(speech);
 
     coach.appendChild(figure);
     coach.appendChild(copy);
