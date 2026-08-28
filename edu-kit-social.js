@@ -1,15 +1,14 @@
 (() => {
   const NAVI_WEB = "https://tt-sensei.github.io/navi-character-/assets/web/characters/";
-  const GROUP_WEB = "https://tt-sensei.github.io/navi-character-/assets/web/groups/";
   const BADGE_KEY = "3nensyakai-social-badges-v1";
 
   const characters = [
-    { id: "riku", name: "りく", role: "落ち着いて考える案内役" },
-    { id: "sora", name: "そら", role: "元気に挑戦する案内役" },
-    { id: "kai", name: "かい", role: "資料をじっくり読む案内役" },
-    { id: "saku", name: "さく", role: "考えをつなぐ案内役" },
-    { id: "tsuki", name: "つき", role: "発見を広げる案内役" },
-    { id: "nami", name: "なみ", role: "やさしく見守る案内役" }
+    { id: "riku" },
+    { id: "sora" },
+    { id: "kai" },
+    { id: "saku" },
+    { id: "tsuki" },
+    { id: "nami" }
   ];
 
   const unitMeta = {
@@ -24,7 +23,6 @@
 
   const modes = {
     start: "まずは自分の考えを決めてみよう。選択肢をくらべると、手がかりが見つかるよ。",
-    hint: "問題文の大事な言葉をもう一度さがして、選択肢とつないでみよう。",
     correct: "いい発見！正解の理由までわかると、社会科の力がもっと伸びるよ。",
     retry: "おしい！解説を読んで、どこが手がかりだったか見つけてみよう。",
     complete: "探検完了！見つけたことをノートに一つ残して、次の学びにつなげよう。"
@@ -89,38 +87,10 @@
     return img;
   }
 
-  function makeTeamList(parent, pose) {
-    const list = document.createElement("div");
-    list.className = "edu-coach-team-list";
-    characters.forEach((character) => {
-      addImage(
-        list,
-        "",
-        imagePath(character, pose || "waving"),
-        character.name + "（NAVIキャラ）"
-      );
-    });
-    parent.appendChild(list);
-  }
-
   function addPortal() {
     const body = document.body;
     body.classList.add("edu-page", "edu-portal-page");
     addTopbar(0);
-
-    const header = document.querySelector(".header-container");
-    if (header && !header.querySelector(".edu-portal-team-hero")) {
-      const hero = document.createElement("img");
-      hero.className = "edu-portal-team-hero";
-      hero.src = GROUP_WEB + "group-presenting.webp";
-      hero.alt = "NAVIキャラ6人が社会科の学びを案内している";
-      hero.loading = "eager";
-      hero.decoding = "async";
-      hero.addEventListener("error", () => { hero.hidden = true; });
-      const subtitle = header.querySelector(".subtitle");
-      if (subtitle) subtitle.insertAdjacentElement("afterend", hero);
-      else header.appendChild(hero);
-    }
 
     const cards = document.querySelectorAll(".mission-card");
     const cardCharacters = [
@@ -139,29 +109,12 @@
       const image = document.createElement("img");
       image.className = "mission-navi";
       image.src = imagePath(character, selected[1]);
-      image.alt = character.name + "がこの単元を案内";
+      image.alt = "この単元を案内するNAVIキャラ";
       image.loading = "lazy";
       image.decoding = "async";
       image.addEventListener("error", () => { image.hidden = true; });
       card.insertBefore(image, card.firstElementChild);
     });
-
-    const grid = document.querySelector(".mission-grid");
-    if (grid && !document.querySelector(".edu-team-strip")) {
-      const strip = document.createElement("section");
-      strip.className = "edu-team-strip";
-      strip.setAttribute("aria-label", "社会科をいっしょに学ぶNAVIチーム");
-      const label = document.createElement("strong");
-      label.textContent = "6人のNAVIといっしょに学ぼう";
-      strip.appendChild(label);
-      const list = document.createElement("div");
-      list.className = "edu-team-strip-list";
-      characters.forEach((character) => {
-        addImage(list, "", imagePath(character, "correct"), character.name + "（NAVIキャラ）");
-      });
-      strip.appendChild(list);
-      grid.insertAdjacentElement("afterend", strip);
-    }
 
     refreshBadgeCount();
   }
@@ -188,7 +141,7 @@
       figure,
       "",
       imagePath(character, "waving"),
-      character.name + "（NAVIキャラ）",
+      "NAVIキャラの案内",
       false
     );
     picture.id = "edu-coach-image";
@@ -198,65 +151,23 @@
     const label = document.createElement("span");
     label.className = "edu-coach-label";
     label.id = "edu-coach-label";
-    label.textContent = character.name + "からのひとこと";
+    label.textContent = "学びの案内";
     const speech = document.createElement("p");
     speech.className = "edu-coach-speech";
     speech.id = "edu-coach-speech";
     speech.setAttribute("aria-live", "polite");
     speech.textContent = unitMeta[unit].guide;
-    const role = document.createElement("p");
-    role.className = "edu-coach-role";
-    role.id = "edu-coach-role";
-    role.textContent = character.role;
-    copy.appendChild(label);
-    copy.appendChild(speech);
-    copy.appendChild(role);
-
-    const hint = document.createElement("button");
-    hint.type = "button";
-    hint.className = "edu-hint-button";
-    hint.id = "edu-hint-button";
-    hint.textContent = "💡 ヒントをきく";
-    hint.addEventListener("click", () => {
-      setCoach("hint");
-      hint.textContent = "💡 ヒントをきいたよ";
-      window.setTimeout(() => { hint.textContent = "💡 ヒントをきく"; }, 1800);
-    });
-
-    const team = document.createElement("div");
-    team.className = "edu-coach-team";
-    const teamLabel = document.createElement("span");
-    teamLabel.className = "edu-coach-team-label";
-    teamLabel.textContent = "NAVIチーム";
-    team.appendChild(teamLabel);
-    makeTeamList(team, "waving");
 
     coach.appendChild(figure);
     coach.appendChild(copy);
-    coach.appendChild(hint);
-    coach.appendChild(team);
     game.insertAdjacentElement("beforebegin", coach);
-  }
-
-  function addUnitResultImage() {
-    const result = document.getElementById("result-area");
-    if (!result || result.querySelector(".edu-result-team")) return;
-    const image = document.createElement("img");
-    image.className = "edu-result-team";
-    image.src = GROUP_WEB + "group-celebration.webp";
-    image.alt = "NAVIキャラ6人が学習の達成をお祝いしている";
-    image.loading = "lazy";
-    image.decoding = "async";
-    image.addEventListener("error", () => { image.hidden = true; });
-    result.insertBefore(image, result.firstElementChild);
   }
 
   function setCoach(mode) {
     const image = document.getElementById("edu-coach-image");
     const label = document.getElementById("edu-coach-label");
     const speech = document.getElementById("edu-coach-speech");
-    const role = document.getElementById("edu-coach-role");
-    if (!image || !label || !speech || !role) return;
+    if (!image || !label || !speech) return;
 
     if (mode === "correct" || mode === "retry") {
       currentCharacter = (currentCharacter + (mode === "retry" ? 1 : 0)) % characters.length;
@@ -267,16 +178,14 @@
     const character = characters[currentCharacter];
     const pose = mode === "correct" ? "correct" :
       mode === "retry" ? "retry" :
-      mode === "hint" ? "hint" :
       mode === "complete" ? "complete" : "waving";
     image.hidden = false;
     image.src = imagePath(character, pose);
-    image.alt = character.name + "（NAVIキャラ）";
-    label.textContent = character.name + "からのひとこと";
+    image.alt = "NAVIキャラの案内";
+    label.textContent = "学びの案内";
     speech.textContent = mode === "start" && unitMeta[currentUnit]
       ? unitMeta[currentUnit].guide
       : (modes[mode] || modes.start);
-    role.textContent = character.role;
   }
 
   function playEffect(target, className) {
@@ -337,7 +246,6 @@
       const wrappedResult = function() {
         const result = originalResult.apply(this, arguments);
         setCoach("complete");
-        addUnitResultImage();
         const resultArea = document.getElementById("result-area");
         if (resultArea) {
           playEffect(resultArea, "effect-achievement-glow");
@@ -361,7 +269,6 @@
       addTopbar(currentUnit);
       currentCharacter = currentUnit % characters.length;
       addCoach(currentUnit);
-      addUnitResultImage();
       addEduClasses();
       setCoach("start");
       hookQuiz();
