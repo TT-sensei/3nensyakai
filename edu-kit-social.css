@@ -330,11 +330,10 @@ body.edu-unit-page .reflection-box {
 body.edu-portal-page {
   min-height: 100vh;
   padding: 16px;
+  color: var(--social-ink);
   background:
-    radial-gradient(circle at 12% 12%, rgb(15 118 110 / 11%) 0 4px, transparent 5px),
-    radial-gradient(circle at 88% 30%, rgb(37 99 235 / 10%) 0 4px, transparent 5px),
-    linear-gradient(180deg, #f2fbfc 0%, #f5f8fc 75%);
-  background-size: 36px 36px, 48px 48px, auto;
+    linear-gradient(180deg, rgb(255 255 255 / 72%), rgb(245 248 252 / 88%)),
+    url("https://tt-sensei.github.io/navi-character-/assets/web/backgrounds/daily/daily-shopping-street.webp") center top / cover fixed;
 }
 
 body.edu-portal-page .header-container {
@@ -350,12 +349,7 @@ body.edu-portal-page .header-container {
   position: relative;
 }
 
-body.edu-portal-page .header-container h1 {
-  position: relative;
-  z-index: 1;
-  font-size: clamp(2.05rem, 5.6vw, 3.8rem);
-  line-height: 1.2;
-}
+body.edu-portal-page .header-container h1 { display: none; }
 
 body.edu-portal-page .header-container .subtitle {
   position: relative;
