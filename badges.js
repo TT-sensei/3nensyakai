@@ -182,7 +182,7 @@
       (!showAll ? '<button class="badge-more" type="button">コレクションをぜんぶ見る</button>' : "");
 
     const target = document.querySelector(".mission-grid");
-    if (target) target.parentNode.insertBefore(panel, target);
+    if (target) target.insertAdjacentElement("afterend", panel);
 
     const button = panel.querySelector(".badge-more");
     if (button) {
