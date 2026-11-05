@@ -13,19 +13,19 @@
 
   const unitMeta = {
     1: { title: "わたしたちのまち", short: "地図・方位", guide: "問題の中の大事な言葉と、地図の向きをよく見てみよう。" },
-    2: { title: "わたしたちの市", short: "市のようす", guide: "土地の使われ方や交通の広がりを、資料とつないで考えよう。" },
+    2: { title: "わたしたちの市", short: "市のようす", guide: "土地の使われ方や交通の広がりを、資料（しりょう）とつないで考えよう。" },
     3: { title: "スーパーのくふう", short: "店のくふう", guide: "お客さんの願いと、お店のくふうがどうつながるか見つけよう。" },
-    4: { title: "工場のしごと", short: "工場のくふう", guide: "安全・品質・働く人のくふうに目を向けてみよう。" },
-    5: { title: "火事からまちを守る", short: "消防のしくみ", guide: "いざというとき、誰がどのように動くのか順番を考えよう。" },
-    6: { title: "事故からまちを守る", short: "安全なくらし", guide: "警察だけでなく、地域の人の協力にも注目してみよう。" },
-    7: { title: "まちのうつりかわり", short: "昔と今", guide: "昔と今を比べて、変わった理由と残った知恵を考えよう。" }
+    4: { title: "工場のしごと", short: "工場のくふう", guide: "安全・品質（ひんしつ）・働く人のくふうに目を向けてみよう。" },
+    5: { title: "火事からまちを守る", short: "消防のしくみ", guide: "いざというとき、誰がどのように動くのか順番（じゅんばん）を考えよう。" },
+    6: { title: "事故からまちを守る", short: "安全なくらし", guide: "警察だけでなく、地域（ちいき）の人の協力（きょうりょく）にも注目してみよう。" },
+    7: { title: "まちのうつりかわり", short: "昔と今", guide: "昔と今を比べて、変わった理由と残った知恵（ちえ）を考えよう。" }
   };
 
   const modes = {
     start: "まずは自分の考えを決めてみよう。選択肢をくらべると、手がかりが見つかるよ。",
     correct: "いい発見！正解の理由までわかると、社会科の力がもっと伸びるよ。",
-    retry: "おしい！解説を読んで、どこが手がかりだったか見つけてみよう。",
-    complete: "探検完了！見つけたことをノートに一つ残して、次の学びにつなげよう。"
+    retry: "おしい！解説（かいせつ）を読んで、どこが手がかりだったか見つけてみよう。",
+    complete: "探検（たんけん）完了（かんりょう）！見つけたことをノートに一つ残して、次の学びにつなげよう。"
   };
 
   let currentUnit = 0;
@@ -68,7 +68,7 @@
       '</a>' +
       '<span class="edu-kit-topbar-actions">' +
         '<span class="edu-kit-badge-count" aria-label="集めた社会科バッジ">' + "🏅 バッジ " + readBadgeCount() + "こ" + "</span>" +
-        (unit ? '<a class="edu-kit-home-link" href="index.html">単元をえらぶ</a>' : "") +
+        (unit ? '<a class="edu-kit-home-link" href="index.html">単元（たんげん）をえらぶ</a>' : "") +
       '</span>';
     document.body.insertBefore(bar, document.body.firstChild);
   }
@@ -151,7 +151,7 @@
     const label = document.createElement("span");
     label.className = "edu-coach-label";
     label.id = "edu-coach-label";
-    label.textContent = "学びの案内";
+    label.textContent = "学びの案内（あんない）";
     const speech = document.createElement("p");
     speech.className = "edu-coach-speech";
     speech.id = "edu-coach-speech";
@@ -184,7 +184,7 @@
     image.hidden = false;
     image.src = imagePath(character, pose);
     image.alt = "NAVIキャラの案内";
-    label.textContent = "学びの案内";
+    label.textContent = "学びの案内（あんない）";
     speech.textContent = mode === "start" && unitMeta[currentUnit]
       ? unitMeta[currentUnit].guide
       : (modes[mode] || modes.start);
