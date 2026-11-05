@@ -18,6 +18,11 @@
         .player-icon { position: absolute; top: -10px; left: 0%; font-size: 30px; transition: left 0.5s ease; transform: translateX(-50%); }
         .goal-icon { position: absolute; top: 0; right: 5px; font-size: 20px; }
         
+        /* 工程の流れ図パネル */
+        .flow-area { background-color: #e8eaf6; border: 2px solid #7986cb; border-radius: 10px; padding: 12px; margin-bottom: 20px; }
+        .flow-title { font-weight: bold; color: #303f9f; margin-bottom: 8px; }
+        .flow-area svg { width: 100%; height: auto; display: block; }
+
         /* 探偵風の問題文エリア */
         .secret-mission { background-color: #3f51b5; color: white; border-radius: 5px; padding: 5px 10px; font-size: 0.9em; display: inline-block; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px;}
         .question-text { font-size: 1.2em; margin-bottom: 20px; font-weight: bold; min-height: 2em; line-height: 1.4; border-left: 5px solid #3f51b5; padding-left: 10px; text-align: left; }
@@ -59,6 +64,55 @@
             <div class="progress-bar" id="progress-bar"></div>
             <div class="player-icon" id="player-icon">🕵️</div>
             <div class="goal-icon">🏭</div>
+        </div>
+
+        <div class="flow-area">
+            <div class="flow-title">🏭 かまぼこ作りの流れ</div>
+            <svg viewBox="0 0 560 130" role="img" aria-label="かまぼこ作りの工程の流れ図" font-family="'Hiragino Maru Gothic ProN','Meiryo',sans-serif">
+                <g font-weight="bold" text-anchor="middle">
+                    <g>
+                        <rect x="1" y="32" width="66" height="70" rx="8" fill="#ffffff" stroke="#5c6bc0" stroke-width="2"/>
+                        <circle cx="34" cy="32" r="12" fill="#3f51b5"/><text x="34" y="37" font-size="12" fill="#ffffff">1</text>
+                        <text x="34" y="62" font-size="13" fill="#303f9f">魚が</text><text x="34" y="80" font-size="13" fill="#303f9f">とどく</text>
+                        <polygon points="69,60 79,67 69,74" fill="#5c6bc0"/>
+                    </g>
+                    <g>
+                        <rect x="83" y="32" width="66" height="70" rx="8" fill="#ffffff" stroke="#5c6bc0" stroke-width="2"/>
+                        <circle cx="116" cy="32" r="12" fill="#3f51b5"/><text x="116" y="37" font-size="12" fill="#ffffff">2</text>
+                        <text x="116" y="71" font-size="14" fill="#303f9f">あらう</text>
+                        <polygon points="151,60 161,67 151,74" fill="#5c6bc0"/>
+                    </g>
+                    <g>
+                        <rect x="165" y="32" width="66" height="70" rx="8" fill="#ffffff" stroke="#5c6bc0" stroke-width="2"/>
+                        <circle cx="198" cy="32" r="12" fill="#3f51b5"/><text x="198" y="37" font-size="12" fill="#ffffff">3</text>
+                        <text x="198" y="62" font-size="13" fill="#303f9f">すり身に</text><text x="198" y="80" font-size="13" fill="#303f9f">する</text>
+                        <polygon points="233,60 243,67 233,74" fill="#5c6bc0"/>
+                    </g>
+                    <g>
+                        <rect x="247" y="32" width="66" height="70" rx="8" fill="#ffffff" stroke="#5c6bc0" stroke-width="2"/>
+                        <circle cx="280" cy="32" r="12" fill="#3f51b5"/><text x="280" y="37" font-size="12" fill="#ffffff">4</text>
+                        <text x="280" y="62" font-size="13" fill="#303f9f">形を</text><text x="280" y="80" font-size="13" fill="#303f9f">つくる</text>
+                        <polygon points="315,60 325,67 315,74" fill="#5c6bc0"/>
+                    </g>
+                    <g>
+                        <rect x="329" y="32" width="66" height="70" rx="8" fill="#ffffff" stroke="#5c6bc0" stroke-width="2"/>
+                        <circle cx="362" cy="32" r="12" fill="#3f51b5"/><text x="362" y="37" font-size="12" fill="#ffffff">5</text>
+                        <text x="362" y="71" font-size="14" fill="#303f9f">蒸（む）す</text>
+                        <polygon points="397,60 407,67 397,74" fill="#5c6bc0"/>
+                    </g>
+                    <g>
+                        <rect x="411" y="32" width="66" height="70" rx="8" fill="#ffffff" stroke="#5c6bc0" stroke-width="2"/>
+                        <circle cx="444" cy="32" r="12" fill="#3f51b5"/><text x="444" y="37" font-size="12" fill="#ffffff">6</text>
+                        <text x="444" y="71" font-size="14" fill="#303f9f">冷やす</text>
+                        <polygon points="479,60 489,67 479,74" fill="#5c6bc0"/>
+                    </g>
+                    <g>
+                        <rect x="493" y="32" width="66" height="70" rx="8" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+                        <circle cx="526" cy="32" r="12" fill="#ff9800"/><text x="526" y="37" font-size="12" fill="#ffffff">7</text>
+                        <text x="526" y="62" font-size="13" fill="#e65100">包んで</text><text x="526" y="80" font-size="13" fill="#e65100">箱づめ</text>
+                    </g>
+                </g>
+            </svg>
         </div>
 
         <div class="secret-mission" id="mission-label">ミッション</div>
@@ -126,7 +180,8 @@
                 { q: "すごい機械がたくさんあるのに、さいごのチェックは「人の目」でします。なぜかな？", c: ["機械ではわからない、小さなキズやちがいを見つけるため", "機械の電源が切れてしまったから", "人がひまにならないようにするため"], a: "機械ではわからない、小さなキズやちがいを見つけるため", exp: "機械は「はやく・たくさん」が得意だけど、細かい形や色、やわらかさなどの「おいしさのチェック」は、やっぱりプロの人の目が一番なんだ。" },
                 { q: "食べ物（かまぼこなど）をおいしく安全に作るために、工場でいつも気を配っているものは？", c: ["部屋や機械の「温度（おんど）」", "部屋の「あかるさ」", "流している「音楽」"], a: "部屋や機械の「温度（おんど）」", exp: "温度が高いと食べ物がくさってしまったり、味が落ちたりするから、部屋をすずしく保つなど、温度チェックは欠かせないんだ。" },
                 { q: "機械だけじゃなく、手作りで商品を作る「職人（しょくにん）さん」がいるのはなぜ？", c: ["昔からの伝統（でんとう）の味や、とくべつな技術をまもるため", "機械を買うお金がないから", "機械の使い方がわからないから"], a: "昔からの伝統（でんとう）の味や、とくべつな技術をまもるため", exp: "機械がたくさんある今でも、機械では出せない特別な味や、長年受けつがれてきた技を守るために、職人さんが活躍しているよ。" },
-                { q: "できた商品を、ビニールのパックなどでしっかりと包む（ほうそうする）のはなぜ？", c: ["ごみが入らず、新鮮で長持ちするようにするため", "見た目をカラフルにするためだけ", "お店の人が持ちやすくするため"], a: "ごみが入らず、新鮮で長持ちするようにするため", exp: "空気にふれると食べ物は傷みやすくなるんだ。しっかりパッケージすることで、みんなの家まで安全に届けられるよ。" }
+                { q: "できた商品を、ビニールのパックなどでしっかりと包む（ほうそうする）のはなぜ？", c: ["ごみが入らず、新鮮で長持ちするようにするため", "見た目をカラフルにするためだけ", "お店の人が持ちやすくするため"], a: "ごみが入らず、新鮮で長持ちするようにするため", exp: "空気にふれると食べ物は傷みやすくなるんだ。しっかりパッケージすることで、みんなの家まで安全に届けられるよ。" },
+                { q: "上の「かまぼこ作りの流れ」を見よう。すり身を形づくったあとにするのは、どれ？", c: ["蒸（む）す", "魚をあらう", "包んで箱づめする"], a: "蒸（む）す", exp: "形づくったすり身は、蒸して火を通すんだ。そのあと冷やしてから、包んで箱づめするよ。流れ図の④→⑤で、たしかめよう！" }
             ],
             stage3: [ // 原料と出荷のヒミツ
                 { q: "工場で作られた食べ物は、どうやって遠くのスーパーに運ばれる？", c: ["冷蔵庫がついたトラック（保冷車）", "タクシーの助手席", "自転車のかご"], a: "冷蔵庫がついたトラック（保冷車）", exp: "せっかくおいしく作っても、ぬるくなると傷んでしまうから、冷たいまま運べる「保冷車」が大活躍しているんだ。" },

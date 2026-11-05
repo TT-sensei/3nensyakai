@@ -20,6 +20,15 @@
         
         .question-text { font-size: 1.3em; margin-bottom: 20px; font-weight: bold; min-height: 2em; line-height: 1.4; }
         .question-image { max-width: 100%; height: auto; max-height: 150px; margin-bottom: 20px; border: 2px solid #ddd; border-radius: 10px; display: none; }
+
+        /* 資料パネル */
+        .panel-area { background-color: #f1f8e9; border: 2px solid #81c784; border-radius: 10px; padding: 12px; margin-bottom: 20px; }
+        .panel-title { font-weight: bold; color: #2e7d32; margin-bottom: 10px; }
+        .panel-flex { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+        .symbol-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; flex: 1; min-width: 270px; }
+        .symbol-item { background-color: #fff; border: 1.5px solid #a5d6a7; border-radius: 8px; padding: 6px 2px; }
+        .symbol-glyph { font-size: 26px; font-weight: bold; color: #1565c0; display: block; line-height: 1.25; }
+        .symbol-name { font-size: 12px; font-weight: bold; color: #333; }
         
         .choices { display: flex; flex-direction: column; gap: 10px; }
         .choice-btn { background-color: #e8f5e9; border: 2px solid #81c784; border-radius: 10px; padding: 15px; font-size: 1.1em; cursor: pointer; transition: all 0.2s; }
@@ -58,6 +67,42 @@
             <div class="progress-bar" id="progress-bar"></div>
             <div class="player-icon" id="player-icon">🚶</div>
             <div class="goal-icon">🏫</div>
+        </div>
+
+        <div class="panel-area">
+            <div class="panel-title">🧭 しりょう：方位（ほうい）と地図記号（ちずきごう）</div>
+            <div class="panel-flex">
+                <svg viewBox="0 0 170 170" width="150" height="150" role="img" aria-label="八方位のコンパス" font-family="'Hiragino Maru Gothic ProN','Meiryo',sans-serif">
+                    <circle cx="85" cy="85" r="62" fill="#ffffff" stroke="#81c784" stroke-width="3"/>
+                    <g stroke="#c8e6c9" stroke-width="2">
+                        <line x1="85" y1="23" x2="85" y2="147"/>
+                        <line x1="23" y1="85" x2="147" y2="85"/>
+                        <line x1="41" y1="41" x2="129" y2="129"/>
+                        <line x1="129" y1="41" x2="41" y2="129"/>
+                    </g>
+                    <polygon points="85,32 93,85 85,76 77,85" fill="#e53935"/>
+                    <polygon points="85,138 77,85 85,94 93,85" fill="#90a4ae"/>
+                    <circle cx="85" cy="85" r="6" fill="#2e7d32"/>
+                    <text x="85" y="18" text-anchor="middle" font-size="15" font-weight="bold" fill="#e53935">北</text>
+                    <text x="85" y="166" text-anchor="middle" font-size="13" font-weight="bold" fill="#546e7a">南</text>
+                    <text x="160" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="#546e7a">東</text>
+                    <text x="10" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="#546e7a">西</text>
+                    <text x="140" y="38" text-anchor="middle" font-size="11" font-weight="bold" fill="#78909c">北東</text>
+                    <text x="140" y="140" text-anchor="middle" font-size="11" font-weight="bold" fill="#78909c">南東</text>
+                    <text x="30" y="140" text-anchor="middle" font-size="11" font-weight="bold" fill="#78909c">南西</text>
+                    <text x="30" y="38" text-anchor="middle" font-size="11" font-weight="bold" fill="#78909c">北西</text>
+                </svg>
+                <div class="symbol-grid">
+                    <div class="symbol-item"><span class="symbol-glyph">文</span><span class="symbol-name">学校</span></div>
+                    <div class="symbol-item"><span class="symbol-glyph">〒</span><span class="symbol-name">郵便局（ゆうびんきょく）</span></div>
+                    <div class="symbol-item"><span class="symbol-glyph">◎</span><span class="symbol-name">市役所（しやくしょ）</span></div>
+                    <div class="symbol-item"><span class="symbol-glyph">✕</span><span class="symbol-name">交番（こうばん）</span></div>
+                    <div class="symbol-item"><span class="symbol-glyph" style="color:#e53935;">✚</span><span class="symbol-name">病院（びょういん）</span></div>
+                    <div class="symbol-item"><svg viewBox="0 0 40 34" width="34" height="29" aria-label="消防署の記号"><g stroke="#1565c0" stroke-width="3.5" fill="none" stroke-linecap="round"><path d="M8 4 v14 M20 4 v16 M32 4 v14 M8 18 q6 8 12 2 q6 6 12 -2"/></g></svg><span class="symbol-name">消防署（しょうぼうしょ）</span></div>
+                    <div class="symbol-item"><svg viewBox="0 0 40 34" width="34" height="29" aria-label="神社の記号"><g fill="#1565c0"><rect x="4" y="4" width="32" height="5" rx="2"/><rect x="9" y="13" width="22" height="4" rx="2"/><rect x="9" y="13" width="4" height="17"/><rect x="27" y="13" width="4" height="17"/></g></svg><span class="symbol-name">神社（じんじゃ）</span></div>
+                    <div class="symbol-item"><span class="symbol-glyph">卍</span><span class="symbol-name">お寺（てら）</span></div>
+                </div>
+            </div>
         </div>
 
         <div class="question-text" id="question-text">ロード中...</div>
@@ -114,7 +159,7 @@
         const allQuestions = {
             stage1: [
                 { q: "太陽がのぼる方角は、どこですか？", c: ["東（ひがし）", "西（にし）", "南（みなみ）", "北（きた）"], a: "東（ひがし）", exp: "朝、太陽は東からのぼって、夕方に西へしずむんだね。これを覚えておくと方位がわかるよ！" },
-                { q: "地図をみるとき、ふつうは「上」がどの方角になるように作られていますか？", c: ["北（きた）", "南（みなみ）", "東（ひがし）", "西（にし）"], a: "北（きた）", exp: "地図はいつも「北」が上になるように作られているよ。方位記号の「４」みたいなマークも上を指しているね。" },
+                { q: "地図をみるとき、ふつうは「上」がどの方角になるように作られていますか？", c: ["北（きた）", "南（みなみ）", "東（ひがし）", "西（にし）"], a: "北（きた）", exp: "地図はふつう「北」が上になるように作られているよ。方位記号（ほういきごう）の矢印も、北を指しているね。上のしりょうのコンパスでもたしかめよう！" },
                 { q: "まちの様子を調べるとき、高いところから見るとどうなりますか？", c: ["遠くまでよく見える", "何も見えなくなる", "声がよく聞こえる"], a: "遠くまでよく見える", exp: "高いところから見ると、まち全体の広がりや、どこに何があるかが一目でわかるね！" }
             ],
             stage2: [
@@ -123,7 +168,9 @@
                 { q: "消防署（しょうぼうしょ）を表す地図記号は、何の形からできていますか？", c: ["さすまた（昔の道具）の形", "ホースの形", "消防車の形"], a: "さすまた（昔の道具）の形", exp: "昔、火事のときに家をこわして火を消すために使っていた「さすまた」という道具の形だよ。" },
                 { q: "市役所や区役所を表す地図記号はどれですか？", c: ["◎（二重丸）", "〒の形", "十（漢字のじゅう）"], a: "◎（二重丸）", exp: "まちの中心になる大切な場所だから、◎（二重丸）で地図の中でも目立つようになっているんだ。" },
                 { q: "「〒」の形の地図記号は、何を表していますか？", c: ["郵便局（ゆうびんきょく）", "病院", "神社"], a: "郵便局（ゆうびんきょく）", exp: "郵便をあつかっていた「ていしんしょう（逓信省）」という昔の役所の「テ」というカタカナからきているよ。" },
-                { q: "「十」の形の地図記号は、何を表していますか？", c: ["病院", "お寺", "交番"], a: "病院", exp: "病院や救急箱、救急車などでよく見る「十字」の形からきているよ。" }
+                { q: "「十」の形の地図記号は、何を表していますか？", c: ["病院", "お寺", "交番"], a: "病院", exp: "病院や救急箱、救急車などでよく見る「十字」の形からきているよ。" },
+                { q: "上のしりょうを見よう。鳥居（とりい）の形の地図記号は、何を表していますか？", c: ["神社（じんじゃ）", "お寺", "学校"], a: "神社（じんじゃ）", exp: "神社の入口にある「鳥居」の形が、そのまま記号になったんだよ。" },
+                { q: "上のしりょうを見よう。「卍（まんじ）」の形の地図記号は、何を表していますか？", c: ["お寺（てら）", "神社（じんじゃ）", "病院"], a: "お寺（てら）", exp: "お寺の記号は「卍」の形。神社の鳥居の記号とまちがえやすいから、気をつけよう！" }
             ],
             stage3: [
                 { q: "まちの様子を地図にまとめるとき、便利なものは何ですか？", c: ["地図記号", "温度計", "ストップウォッチ"], a: "地図記号", exp: "文字で「がっこう」と書くよりも、記号を使ったほうが地図がすっきりして見やすくなるね！" },

@@ -19,7 +19,11 @@
         .goal-icon { position: absolute; top: 0; right: 5px; font-size: 20px; }
         
         .question-text { font-size: 1.2em; margin-bottom: 20px; font-weight: bold; min-height: 2em; line-height: 1.4; }
-        .general-note { font-size: 0.8em; color: #e91e63; font-weight: bold; display: block; margin-bottom: 5px; }
+
+        /* 地図パネル */
+        #map-area { display: none; background-color: #f5fbff; border: 2px solid #03a9f4; border-radius: 10px; padding: 12px; margin-bottom: 20px; }
+        .map-title { font-weight: bold; color: #0277bd; margin-bottom: 8px; }
+        #map-area svg { width: 100%; height: auto; display: block; }
 
         .choices { display: flex; flex-direction: column; gap: 10px; }
         .choice-btn { background-color: #f1f8e9; border: 2px solid #4fc3f7; border-radius: 10px; padding: 15px; font-size: 1.1em; cursor: pointer; transition: all 0.2s; }
@@ -46,7 +50,7 @@
 <body>
 
     <h1>🏙️ わたしたちの市 クエスト</h1>
-    <p style="margin-top:0;">高萩市や、市の土地の使われ方についてしらべよう！</p>
+    <p style="margin-top:0;">あおぞら市の土地の使われ方を、地図を見ながらしらべよう！</p>
 
     <div class="game-container" id="game-area">
         <div class="status-bar">
@@ -60,8 +64,87 @@
             <div class="goal-icon">🏢</div>
         </div>
 
+        <div id="map-area">
+            <div class="map-title">🗺️ あおぞら市の地図（ちず）</div>
+            <svg viewBox="0 0 560 380" role="img" aria-label="あおぞら市の地図" font-family="'Hiragino Maru Gothic ProN','Meiryo',sans-serif">
+                <!-- 土地 -->
+                <rect x="0" y="0" width="560" height="380" fill="#f7fbf0"/>
+                <!-- 海（東） -->
+                <rect x="455" y="0" width="105" height="380" fill="#aee3f9"/>
+                <path d="M470 60 q10 -8 20 0 q10 8 20 0 q10 -8 20 0" stroke="#4fc3f7" stroke-width="3" fill="none"/>
+                <path d="M470 250 q10 -8 20 0 q10 8 20 0 q10 -8 20 0" stroke="#4fc3f7" stroke-width="3" fill="none"/>
+                <path d="M470 330 q10 -8 20 0 q10 8 20 0 q10 -8 20 0" stroke="#4fc3f7" stroke-width="3" fill="none"/>
+                <text x="507" y="165" text-anchor="middle" font-size="30" font-weight="bold" fill="#0277bd">海</text>
+                <text x="507" y="192" text-anchor="middle" font-size="12" font-weight="bold" fill="#0277bd">海水浴場</text>
+                <text x="507" y="208" text-anchor="middle" font-size="10" fill="#0277bd">（かいすいよくじょう）</text>
+                <!-- 山と森（西） -->
+                <polygon points="5,205 55,95 105,205" fill="#81c784" stroke="#4caf50" stroke-width="2"/>
+                <polygon points="55,215 115,80 175,215" fill="#66bb6a" stroke="#43a047" stroke-width="2"/>
+                <circle cx="45" cy="235" r="12" fill="#43a047"/>
+                <circle cx="80" cy="248" r="10" fill="#66bb6a"/>
+                <circle cx="115" cy="235" r="12" fill="#43a047"/>
+                <text x="88" y="285" text-anchor="middle" font-size="16" font-weight="bold" fill="#2e7d32">山と森（もり）</text>
+                <!-- 高速道路（北を東西に） -->
+                <rect x="140" y="88" width="315" height="22" fill="#90a4ae"/>
+                <line x1="140" y1="99" x2="455" y2="99" stroke="#ffffff" stroke-width="2" stroke-dasharray="10 8"/>
+                <text x="148" y="104" font-size="13" font-weight="bold" fill="#ffffff">高速道路（こうそくどうろ）</text>
+                <!-- 大きな道路（南北） -->
+                <rect x="352" y="0" width="26" height="380" fill="#bdbdbd"/>
+                <line x1="365" y1="0" x2="365" y2="380" stroke="#ffffff" stroke-width="2" stroke-dasharray="12 10"/>
+                <text x="365" y="372" font-size="12" font-weight="bold" fill="#616161" text-anchor="middle">大きな道路（どうろ）</text>
+                <!-- インターチェンジ（出入口） -->
+                <circle cx="365" cy="99" r="13" fill="#78909c" stroke="#ffffff" stroke-width="3"/>
+                <text x="365" y="142" text-anchor="middle" font-size="13" font-weight="bold" fill="#37474f" style="paint-order:stroke;stroke:#ffffff;stroke-width:3px;stroke-linejoin:round">出入口</text>
+                <!-- 工場（高速道路の出入口の近く） -->
+                <rect x="392" y="128" width="34" height="30" fill="#b0bec5" stroke="#78909c" stroke-width="2"/>
+                <rect x="398" y="112" width="8" height="18" fill="#90a4ae"/>
+                <rect x="424" y="140" width="28" height="24" fill="#cfd8dc" stroke="#78909c" stroke-width="2"/>
+                <text x="420" y="184" text-anchor="middle" font-size="15" font-weight="bold" fill="#37474f">工場</text>
+                <!-- 市役所と学校（駅の近く） -->
+                <rect x="248" y="122" width="46" height="34" fill="#ffe082" stroke="#f9a825" stroke-width="2"/>
+                <text x="271" y="147" text-anchor="middle" font-size="17" font-weight="bold" fill="#e65100">◎</text>
+                <text x="271" y="172" text-anchor="middle" font-size="13" font-weight="bold" fill="#6d4c41">市役所</text>
+                <rect x="302" y="122" width="40" height="34" fill="#ffccbc" stroke="#ff8a65" stroke-width="2"/>
+                <text x="322" y="147" text-anchor="middle" font-size="16" font-weight="bold" fill="#bf360c">文</text>
+                <text x="322" y="172" text-anchor="middle" font-size="13" font-weight="bold" fill="#6d4c41">学校</text>
+                <!-- 家やお店（駅のまわり） -->
+                <text x="228" y="192" text-anchor="middle" font-size="13" font-weight="bold" fill="#5d4037">家やお店</text>
+                <g stroke="#8d6e63" stroke-width="1.5">
+                    <rect x="180" y="212" width="20" height="16" fill="#fff3e0"/><polygon points="178,212 190,200 202,212" fill="#ef6c00"/>
+                    <rect x="208" y="222" width="20" height="16" fill="#fce4ec"/><polygon points="206,222 218,210 230,222" fill="#ad1457"/>
+                    <rect x="238" y="208" width="22" height="18" fill="#e3f2fd"/><polygon points="236,208 249,196 262,208" fill="#1565c0"/>
+                    <rect x="196" y="240" width="20" height="16" fill="#f1f8e9"/><polygon points="194,240 206,228 218,240" fill="#558b2f"/>
+                    <rect x="262" y="232" width="20" height="16" fill="#fff8e1"/><polygon points="260,232 272,220 284,232" fill="#f9a825"/>
+                </g>
+                <!-- 駅 -->
+                <rect x="276" y="252" width="50" height="30" fill="#ffffff" stroke="#795548" stroke-width="2"/>
+                <polygon points="272,252 301,238 330,252" fill="#795548"/>
+                <text x="301" y="274" text-anchor="middle" font-size="16" font-weight="bold" fill="#4e342e">駅</text>
+                <!-- 川（西から東へ） -->
+                <path d="M118 302 C 200 276, 290 320, 372 296 C 410 286, 435 296, 455 302" stroke="#4fc3f7" stroke-width="13" fill="none" stroke-linecap="round"/>
+                <text x="172" y="282" text-anchor="middle" font-size="14" font-weight="bold" fill="#01579b">川</text>
+                <!-- 田や畑（川の近くの平らな土地・南） -->
+                <g stroke="#c0ca33" stroke-width="1.5">
+                    <rect x="150" y="318" width="58" height="42" fill="#fff59d"/>
+                    <rect x="208" y="318" width="58" height="42" fill="#dce775"/>
+                    <rect x="266" y="318" width="58" height="42" fill="#f0f4c3"/>
+                </g>
+                <text x="237" y="345" text-anchor="middle" font-size="14" font-weight="bold" fill="#827717">田や畑</text>
+                <!-- 方位マーク -->
+                <circle cx="52" cy="46" r="35" fill="#ffffff" stroke="#78909c" stroke-width="2"/>
+                <polygon points="52,20 58,44 52,38 46,44" fill="#e53935"/>
+                <polygon points="52,72 46,48 52,54 58,48" fill="#90a4ae"/>
+                <text x="52" y="16" text-anchor="middle" font-size="13" font-weight="bold" fill="#e53935" style="paint-order:stroke;stroke:#ffffff;stroke-width:3px;stroke-linejoin:round">北</text>
+                <text x="52" y="103" text-anchor="middle" font-size="11" font-weight="bold" fill="#546e7a" style="paint-order:stroke;stroke:#ffffff;stroke-width:3px;stroke-linejoin:round">南</text>
+                <text x="95" y="51" text-anchor="middle" font-size="11" font-weight="bold" fill="#546e7a" style="paint-order:stroke;stroke:#ffffff;stroke-width:3px;stroke-linejoin:round">東</text>
+                <text x="9" y="51" text-anchor="middle" font-size="11" font-weight="bold" fill="#546e7a" style="paint-order:stroke;stroke:#ffffff;stroke-width:3px;stroke-linejoin:round">西</text>
+                <!-- 外わく -->
+                <rect x="1" y="1" width="558" height="378" fill="none" stroke="#78909c" stroke-width="2"/>
+            </svg>
+        </div>
+
         <div class="question-text" id="question-text">ロード中...</div>
-        
+
         <div class="choices" id="choices-area"></div>
 
         <div id="explanation-area">
@@ -79,7 +162,7 @@
         
         <div class="reflection-box">
             <h3 style="margin-top:0; color: #f57f17;">📝 ノートにふり返りを書こう！</h3>
-            <p>高萩市や、土地の使われ方について調べて、<b>「なるほど！」「そういう理由だったのか！」</b>と思ったことは何かな？<br>理由と一緒に、ノートにまとめてみよう。</p>
+            <p>あおぞら市や、土地の使われ方について調べて、<b>「なるほど！」「そういう理由だったのか！」</b>と思ったことは何かな？<br>理由と一緒に、ノートにまとめてみよう。</p>
         </div>
 
         <button class="choice-btn" style="width:100%; margin-bottom:10px;" onclick="initGame()">もういちど ちょうさする</button>
@@ -112,28 +195,28 @@
 
         const allQuestions = {
             stage1: [
-                { q: "高萩市（たかはぎし）は、茨城県のどのあたりにありますか？", c: ["北（きた）のほう", "南（みなみ）のほう", "まん中"], a: "北（きた）のほう", exp: "高萩市は茨城県の北のほう（県北地域）にあるよ。地図で確認してみよう！" },
-                { q: "高萩市の【東がわ】にあるのは、つぎのうちどれですか？", c: ["海（太平洋）", "高い山", "東京都"], a: "海（太平洋）", exp: "東側にはきれいな海（太平洋）が広がっているね。海水浴場もあるよ。" },
-                { q: "高萩市の西がわは、どんな土地が多いですか？", c: ["山や森林", "海", "大きなビル"], a: "山や森林", exp: "西の方には山が広がっていて、緑がとても豊かなんだ。" },
+                { q: "地図を見よう。あおぞら市の【東がわ】にあるのは、どれですか？", c: ["海", "高い山", "大きな川"], a: "海", exp: "地図の右がわ（東）には、海が広がっているね。海水浴場（かいすいよくじょう）もあるよ。", useMap: true },
+                { q: "地図を見よう。あおぞら市の【西がわ】に多いのは、どれですか？", c: ["山や森（もり）", "海", "大きなビル"], a: "山や森（もり）", exp: "地図の左がわ（西）には山が広がっていて、森がたくさんあるね。緑がゆたかな場所だよ。", useMap: true },
+                { q: "地図を見よう。あおぞら市を【北から南へ】通っているものは、どれですか？", c: ["大きな道路（どうろ）", "大きな川", "海"], a: "大きな道路（どうろ）", exp: "北と南を結ぶ大きな道路が、市のまん中を通っているね。まちとまちを結ぶ、大切な道だよ。", useMap: true },
                 { q: "東・西・南・北の４つに、ななめの方位をくわえたものを何という？", c: ["八方位（はちほうい）", "六方位", "全方位"], a: "八方位（はちほうい）", exp: "東西南北の間に「北東・北西・南東・南西」を入れると、もっとくわしく場所を伝えられるね。" }
             ],
             stage2: [
-                { q: "高萩市で、工場がたくさんあるのはどのあたりですか？", c: ["高速道路の近く", "海のすぐそば", "山のてっぺん"], a: "高速道路の近く", exp: "工場で作ったものを積んだ大きなトラックが、すぐに高速道路に乗って運べるから便利なんだ！" },
-                { q: "高萩市を南北（たて）に走っている、大きな道路はどれですか？", c: ["国道６号（ろくごう）", "国道１号", "国道５０号"], a: "国道６号（ろくごう）", exp: "国道6号は、海沿いのまちをつなぐとても大切な大きな道だよ。" },
-                { q: "【ある市のお話】駅のまわりなど、家やお店が多くて人があつまるのはどんな所？", c: ["にぎやかな所", "緑の多い所", "田や畑の多い所"], a: "にぎやかな所", exp: "電車やバスに乗る人がたくさん集まるから、お店や家が多く建てられているんだね。" },
-                { q: "【ある市のお話】山が多くて高い土地で、林が広がっているのはどんな所？", c: ["緑の多い所", "にぎやかな所", "工場の多い所"], a: "緑の多い所", exp: "自然のままの山や林が残っていて、動物や虫がたくさん住んでいるよ。" },
-                { q: "【ある市のお話】平らな土地で、田んぼや畑が広がっているのはどんな所？", c: ["田や畑の多い所", "にぎやかな所", "工場の多い所"], a: "田や畑の多い所", exp: "平らで水が使いやすい場所は、お米や野菜を育てるのにピッタリなんだ。" }
+                { q: "地図を見よう。工場（こうじょう）が集まっているのは、どこの近くですか？", c: ["高速道路（こうそくどうろ）の出入口（でいりぐち）の近く", "海のすぐそば", "山のてっぺん"], a: "高速道路（こうそくどうろ）の出入口（でいりぐち）の近く", exp: "工場で作ったものを積んだ大きなトラックが、すぐに高速道路に乗って運べるから、工場は出入口の近くに集まるんだね！", useMap: true },
+                { q: "地図を見よう。田や畑が広がっているのは、どんな土地ですか？", c: ["川の近くの平らな土地", "山の上のけわしい土地", "海の中"], a: "川の近くの平らな土地", exp: "平らで、水が使いやすい土地は、田や畑にぴったりだね。あおぞら市では、川の近くの平らな土地に広がっているよ。", useMap: true },
+                { q: "地図を見よう。家やお店が多くて、人が集まるのはどこのまわりですか？", c: ["駅（えき）のまわり", "山のおく", "田んぼのまん中"], a: "駅（えき）のまわり", exp: "電車やバスを使う人がたくさん集まるから、駅のまわりには家やお店が多く集まるんだね。", useMap: true },
+                { q: "山が多くて高い土地で、林（はやし）が広がっているのは、どんな所ですか？", c: ["緑の多い所", "にぎやかな所", "工場の多い所"], a: "緑の多い所", exp: "自然のままの山や林が残っていて、動物や虫がたくさん住んでいるよ。あおぞら市では、西がわがそうだね。" },
+                { q: "平らな土地で、田んぼや畑が広がっているのは、どんな所ですか？", c: ["田や畑の多い所", "にぎやかな所", "工場の多い所"], a: "田や畑の多い所", exp: "平らで水が使いやすい場所は、お米や野菜を育てるのにピッタリなんだ。あおぞら市では、川の近くの南がわに多いね。" }
             ],
             stage3: [
-                { q: "市役所や図書館など、みんなが利用できるしせつを何という？", c: ["公共（こうきょう）しせつ", "秘密のしせつ", "お店"], a: "公共（こうきょう）しせつ", exp: "まちに住むみんなが便利に生活したり、勉強したりするために作られた大切な場所だよ。" },
-                { q: "古いお寺や神社、石碑（せきひ）などを見ると、どんなことがわかりますか？", c: ["市の昔のようす", "あしたの天気", "スーパーのねだん"], a: "市の昔のようす", exp: "昔の人がどうやって暮らしていたか、どんな災害があったかなど、大切な歴史がわかるよ。" },
-                { q: "【ある市のお話】公共しせつは、市のどんな場所に多いですか？", c: ["人が多く住んでいる所", "人がだれもいない所", "山のおく"], a: "人が多く住んでいる所", exp: "みんなが使いやすいように、人がたくさん集まる便利な場所に作られていることが多いよ。" }
+                { q: "市役所（しやくしょ）や図書館（としょかん）など、みんなが利用できるしせつを何という？", c: ["公共（こうきょう）しせつ", "秘密のしせつ", "お店"], a: "公共（こうきょう）しせつ", exp: "まちに住むみんなが便利に生活したり、勉強したりするために作られた大切な場所だよ。" },
+                { q: "古いお寺や神社（じんじゃ）、石碑（せきひ）などを見ると、どんなことがわかりますか？", c: ["市の昔のようす", "あしたの天気", "スーパーのねだん"], a: "市の昔のようす", exp: "昔の人がどうやって暮らしていたか、どんな災害（さいがい）があったかなど、大切な歴史がわかるよ。" },
+                { q: "地図を見よう。あおぞら市の市役所（しやくしょ）や学校は、どこの近くにありますか？", c: ["駅や、人の集まる所の近く", "人がだれもいない山のおく", "海の中"], a: "駅や、人の集まる所の近く", exp: "みんなが使いやすいように、公共しせつは人がたくさん集まる便利な場所に作られていることが多いんだね。", useMap: true }
             ],
-            boss: { 
-                q: "市の「土地の使われ方」について調べてみて、わかったことはどれかな？", 
-                c: ["場所の特ちょう（海、山、駅など）に合わせて、色々な使われ方をしている", "どこに行っても、ぜんぶ同じように使われている", "だれも理由を考えずに、てきとうに家を建てている"], 
-                a: "場所の特ちょう（海、山、駅など）に合わせて、色々な使われ方をしている", 
-                exp: "大正解！交通が便利な場所、自然が多い場所など、それぞれの場所の良さを生かしてまちができているんだね！" 
+            boss: {
+                q: "市の「土地の使われ方」について調べてみて、わかったことはどれかな？",
+                c: ["場所の特ちょう（海、山、駅など）に合わせて、いろいろな使われ方をしている", "どこに行っても、ぜんぶ同じように使われている", "だれも理由を考えずに、てきとうに家を建てている"],
+                a: "場所の特ちょう（海、山、駅など）に合わせて、いろいろな使われ方をしている",
+                exp: "大正解！交通が便利な場所、自然が多い場所など、それぞれの場所の良さを生かしてまちができているんだね！あおぞら市の地図でも、たしかめられたね。"
             }
         };
 
@@ -166,17 +249,13 @@
             const stageInfo = document.getElementById('stage-info');
             const questionText = document.getElementById('question-text');
             
-            if(currentQuestionIndex < 3) stageInfo.textContent = "🗺️ ステージ1：高萩市の位置とまわり";
-            else if(currentQuestionIndex < 7) stageInfo.textContent = "🛣️ ステージ2：八方位と土地のようす";
-            else if(currentQuestionIndex < 9) stageInfo.textContent = "🏫 ステージ3：交通とみんなのしせつ";
+            if(currentQuestionIndex < 3) stageInfo.textContent = "🗺️ ステージ1：あおぞら市の位置とまわり";
+            else if(currentQuestionIndex < 7) stageInfo.textContent = "🌾 ステージ2：土地の使われ方";
+            else if(currentQuestionIndex < 9) stageInfo.textContent = "🏫 ステージ3：みんなのしせつ";
             else stageInfo.textContent = "👹 さいごの試練：市のひみつボス！";
 
-            if (qData.q.includes("【ある市のお話】")) {
-                const cleanText = qData.q.replace("【ある市のお話】", "");
-                questionText.innerHTML = `<span class="general-note">※高萩市ではなく、一般的な「ある市」のお話です</span>第 ${currentQuestionIndex + 1} 問： ${cleanText}`;
-            } else {
-                questionText.textContent = `第 ${currentQuestionIndex + 1} 問： ${qData.q}`;
-            }
+            document.getElementById('map-area').style.display = qData.useMap ? 'block' : 'none';
+            questionText.textContent = `第 ${currentQuestionIndex + 1} 問： ${qData.q}`;
             
             choicesArea.innerHTML = '';
             const shuffledChoices = shuffleArray(qData.c);
@@ -237,7 +316,7 @@
             document.getElementById('max-combo').textContent = maxCombo;
 
             let rank = "";
-            if (score === 10) rank = "👑 すばらしい！きみは「高萩はかせ」だ！";
+            if (score === 10) rank = "👑 すばらしい！きみは「あおぞらはかせ」だ！";
             else if (score >= 8) rank = "🎖️ すごい！「ベテランちょうさ隊長」だ！";
             else if (score >= 5) rank = "🚌 よくがんばった！「一人前ちょうさ隊員」だ！";
             else rank = "🐣 まだまだこれから！「みならい隊員」だ！";

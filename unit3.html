@@ -61,6 +61,17 @@
         }
         .goal-icon { position: absolute; top: 0; right: 5px; font-size: 20px; }
         
+        /* 店内平面図パネル */
+        .floor-area {
+            background-color: #fffde7;
+            border: 2px solid #ffb300;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+        .floor-title { font-weight: bold; color: #e65100; margin-bottom: 8px; }
+        .floor-area svg { width: 100%; height: auto; display: block; }
+
         /* お客さんの声と問題 */
         .customer-voice {
             background-color: #fff3e0;
@@ -166,6 +177,38 @@
             <div class="goal-icon">🏬</div>
         </div>
         
+        <div class="floor-area">
+            <div class="floor-title">🗺️ 店内の図（見取り図）</div>
+            <svg viewBox="0 0 560 360" role="img" aria-label="スーパーの店内の図" font-family="'Hiragino Maru Gothic ProN','Meiryo',sans-serif">
+                <rect x="5" y="5" width="550" height="350" fill="#fff8e1" stroke="#8d6e63" stroke-width="3"/>
+                <!-- 売り場 -->
+                <g font-weight="bold" text-anchor="middle">
+                    <rect x="20" y="20" width="150" height="90" rx="8" fill="#b3e5fc"/><text x="95" y="72" font-size="17" fill="#01579b">お魚（さかな）</text>
+                    <rect x="185" y="20" width="145" height="90" rx="8" fill="#ffcdd2"/><text x="257" y="72" font-size="17" fill="#b71c1c">お肉（にく）</text>
+                    <rect x="345" y="20" width="125" height="90" rx="8" fill="#ffe082"/><text x="407" y="72" font-size="17" fill="#e65100">パン</text>
+                    <rect x="480" y="20" width="65" height="130" rx="8" fill="#fff9c4"/><text x="512" y="72" font-size="13" fill="#827717">牛乳</text><text x="512" y="92" font-size="11" fill="#827717">（ぎゅうにゅう）</text><text x="512" y="118" font-size="13" fill="#827717">たまご</text>
+                    <rect x="20" y="120" width="150" height="50" rx="8" fill="#b2ebf2"/><text x="95" y="143" font-size="14" fill="#006064">冷凍食品</text><text x="95" y="161" font-size="10" fill="#006064">（れいとうしょくひん）</text>
+                    <rect x="185" y="130" width="145" height="100" rx="8" fill="#e1bee7"/><text x="257" y="180" font-size="16" fill="#6a1b9a">調味料</text><text x="257" y="200" font-size="11" fill="#6a1b9a">（ちょうみりょう）</text>
+                    <rect x="345" y="130" width="125" height="100" rx="8" fill="#f8bbd0"/><text x="407" y="186" font-size="17" fill="#880e4f">おかし</text>
+                    <rect x="20" y="180" width="150" height="120" rx="8" fill="#c8e6c9"/><text x="95" y="235" font-size="17" fill="#1b5e20">野菜と果物</text><text x="95" y="257" font-size="12" fill="#1b5e20">（やさいと くだもの）</text>
+                    <rect x="185" y="245" width="145" height="85" rx="8" fill="#dcedc8"/><text x="257" y="288" font-size="16" fill="#33691e">飲み物</text><text x="257" y="308" font-size="11" fill="#33691e">（のみもの）</text>
+                    <rect x="345" y="245" width="65" height="85" rx="8" fill="#ffccbc"/><text x="377" y="294" font-size="12" fill="#bf360c">おそうざい</text>
+                </g>
+                <!-- レジ -->
+                <g>
+                    <rect x="420" y="288" width="36" height="30" fill="#ffe0b2" stroke="#fb8c00" stroke-width="2"/>
+                    <rect x="462" y="288" width="36" height="30" fill="#ffe0b2" stroke="#fb8c00" stroke-width="2"/>
+                    <rect x="504" y="288" width="36" height="30" fill="#ffe0b2" stroke="#fb8c00" stroke-width="2"/>
+                    <text x="480" y="280" text-anchor="middle" font-size="14" font-weight="bold" fill="#e65100">レジ</text>
+                </g>
+                <!-- 入口・出口 -->
+                <rect x="55" y="350" width="80" height="10" fill="#ffffff"/>
+                <rect x="425" y="350" width="80" height="10" fill="#ffffff"/>
+                <text x="95" y="345" text-anchor="middle" font-size="15" font-weight="bold" fill="#2e7d32">入口（いりぐち）</text>
+                <text x="465" y="345" text-anchor="middle" font-size="15" font-weight="bold" fill="#c62828">出口（でぐち）</text>
+            </svg>
+        </div>
+
         <div class="customer-voice" id="customer-voice">ロード中...</div>
         <div class="question-text" id="question-text"></div>
         
@@ -234,7 +277,9 @@
                 { v: "「車いすや、ベビーカーだとお店の中がせまくて通れないよ…」", q: "たくさんのお客さんが来やすくするために、どうする？", c: ["売り場の通路（つうろ）を広くする", "入り口を小さくする", "商品を床（ゆか）におく"], a: "売り場の通路（つうろ）を広くする", exp: "通路が広いと、車いすやベビーカー、カートを押している人でも、ぶつからずに安心してお買い物ができるね。" },
                 { v: "「パンを買ったから、バターもいっしょに買いたいな」", q: "買い物をしやすくするための、品物のならべ方のくふうは？", c: ["いっしょに食べる物を近くにおく", "お店のはじとはじにおく", "毎日おく場所をかえる"], a: "いっしょに食べる物を近くにおく", exp: "関連する商品を近くに置く（関連販売）と、お客さんはあちこち歩き回らなくて済むから、とっても便利なんだ！" },
                 { v: "「車でお店に行きたいんだけど、停める場所あるかな？」", q: "車で来るお客さんのために、どんな工夫をするといい？", c: ["広い駐車場（ちゅうしゃじょう）をつくる", "自転車しか入れなくする", "お店の屋根に停めてもらう"], a: "広い駐車場（ちゅうしゃじょう）をつくる", exp: "たくさんお買い物をしても、車なら運びやすいね。スロープや広い駐車スペースもあるとさらに親切！" },
-                { v: "「お買い物のついでに、お金も引き出せたらいいな」", q: "スーパーの中にあると便利なものは、つぎのうちどれ？", c: ["ＡＴＭ（現金自動あずけ払い機）", "観覧車（かんらんしゃ）", "プール"], a: "ＡＴＭ（現金自動あずけ払い機）", exp: "スーパーの中に銀行のATMやクリーニング屋さんがあると、一度に用事が済ませられて大助かりだね。" }
+                { v: "「お買い物のついでに、お金も引き出せたらいいな」", q: "スーパーの中にあると便利なものは、つぎのうちどれ？", c: ["ＡＴＭ（現金自動あずけ払い機）", "観覧車（かんらんしゃ）", "プール"], a: "ＡＴＭ（現金自動あずけ払い機）", exp: "スーパーの中に銀行のATMやクリーニング屋さんがあると、一度に用事が済ませられて大助かりだね。" },
+                { v: "「入口を入ってすぐ、お野菜はどこかな？」", q: "店内の図を見よう。入口を入ってすぐ近くにある売り場はどれ？", c: ["野菜と果物の売り場", "お肉の売り場", "牛乳とたまごの売り場"], a: "野菜と果物の売り場", exp: "入口の近くに、色とりどりの野菜や果物が並んでいると、お店が明るく見えて入りやすいね。図の左下、入口のそばを見てみよう。" },
+                { v: "「お買い物が終わったよ。お金をはらう場所はどこ？」", q: "店内の図を見よう。お会計をするレジは、どこの近くにある？", c: ["出口の近く", "お店の一番おく", "野菜売り場の中"], a: "出口の近く", exp: "買い終わったお客さんがそのまま外に出られるように、レジは出口の近くにあるんだ。図の右下を見てみよう。" }
             ],
             stage2: [
                 { v: "「このりんご、どこで作られたものか知りたいな！」", q: "お客さんに産地（さんち）を教えるために、どうする？", c: ["ねふだに産地を大きく書く", "小さい字でこっそり書く", "外国産だとウソをつく"], a: "ねふだに産地を大きく書く", exp: "どこでとれたか（産地）がわかると、お客さんは「新鮮だな」「あの県のものだ」と安心して選ぶことができるね。" },
